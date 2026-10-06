@@ -12,7 +12,7 @@ export async function syncCompletedGame(record: CompletedGameRecord): Promise<Sy
   const { data: userData, error: userError } = await client.auth.getUser();
   if (userError || !userData.user) return { synced: false, reason: 'not-authenticated' };
 
-  const { error } = await client.from('sudoku_completions').insert({
+  const { error } = await client.from('sudoku_completions').upsert({
     user_id: userData.user.id,
     puzzle_id: record.puzzleId,
     difficulty: record.difficulty,
@@ -25,6 +25,9 @@ export async function syncCompletedGame(record: CompletedGameRecord): Promise<Sy
     highlight_same: record.highlightSame,
     check_errors: record.checkErrors,
     completed_at: new Date(record.completedAt).toISOString(),
+  }, {
+    onConflict: 'user_id,puzzle_id',
+    ignoreDuplicates: true,
   });
 
   return error ? { synced: false, reason: 'failed' } : { synced: true };

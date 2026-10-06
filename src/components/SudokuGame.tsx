@@ -381,7 +381,7 @@ export default function SudokuGame({
   const rankingSlots = Array.from({ length: 10 }, (_, index) => hallOfFame[index] ?? null);
   const emptyRankingMessages = [
     'En attente d’un nouveau champion',
-    'Éternel second',
+    'Éternel second ?',
     'Le podium, c’est déjà bien',
   ];
 
