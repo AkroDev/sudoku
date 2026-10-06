@@ -118,7 +118,6 @@ export default function HallOfFameView({ grid, returnGrid }: HallOfFameViewProps
           ) : (
             <li className="ranking-row ranking-row--empty" key={`empty-${index}`}>
               <span className="ranking-rank">#{index + 1}</span>
-              {!grid && <span className="ranking-grid-id">—</span>}
               <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
             </li>
           )
