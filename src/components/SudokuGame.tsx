@@ -13,6 +13,7 @@ import {
   recordCompletedGame,
   type PersonalStatistics,
 } from '@/lib/statistics';
+import { syncCompletedGame } from '@/lib/supabase-stats';
 
 type Cell = number | null;
 type Grid = Cell[][];
@@ -173,7 +174,7 @@ export default function SudokuGame({
       setCompleted(true);
       setStarted(false);
       if (!completionRecorded.current) {
-        const nextStatistics = recordCompletedGame({
+        const completedRecord = {
           puzzleId,
           difficulty,
           seed,
@@ -185,8 +186,10 @@ export default function SudokuGame({
           highlightSame,
           checkErrors,
           completedAt: Date.now(),
-        });
+        };
+        const nextStatistics = recordCompletedGame(completedRecord);
         setStatistics(nextStatistics);
+        void syncCompletedGame(completedRecord);
         completionRecorded.current = true;
       }
     }
