@@ -8,6 +8,7 @@ export type DifficultyProfile = {
   code: string;
   label: string;
   targetClues: number;
+  maxAttempts: number;
 };
 
 export type GeneratedPuzzle = {
@@ -19,13 +20,14 @@ export type GeneratedPuzzle = {
   solution: SudokuGrid;
   profile: DifficultyProfile;
   analysis: PuzzleAnalysis;
+  matchedProfile: boolean;
 };
 
 export const DIFFICULTY_PROFILES: Record<Difficulty, DifficultyProfile> = {
-  easy: { code: 'F', label: 'Facile', targetClues: 42 },
-  medium: { code: 'M', label: 'Moyen', targetClues: 36 },
-  hard: { code: 'D', label: 'Difficile', targetClues: 31 },
-  expert: { code: 'X', label: 'Expert', targetClues: 27 },
+  easy: { code: 'F', label: 'Facile', targetClues: 42, maxAttempts: 16 },
+  medium: { code: 'M', label: 'Moyen', targetClues: 36, maxAttempts: 24 },
+  hard: { code: 'D', label: 'Difficile', targetClues: 31, maxAttempts: 24 },
+  expert: { code: 'X', label: 'Expert', targetClues: 27, maxAttempts: 64 },
 };
 
 export const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
@@ -171,22 +173,56 @@ function createPuzzleGrid(solution: SudokuGrid, targetClues: number, random: () 
   return grid;
 }
 
+function matchesProfile(difficulty: Difficulty, analysis: PuzzleAnalysis) {
+  if (difficulty === 'easy') {
+    return analysis.solvedLogically && analysis.techniques.every((technique) => technique === 'naked-single');
+  }
+  if (difficulty === 'medium') {
+    return analysis.solvedLogically && analysis.techniques.includes('hidden-single');
+  }
+  if (difficulty === 'hard') {
+    return !analysis.solvedLogically && analysis.searchDepth > 0 && analysis.searchDepth < 40;
+  }
+  return !analysis.solvedLogically && analysis.searchDepth >= 40;
+}
+
 export function createPuzzle(difficulty: Difficulty, seed: number): GeneratedPuzzle {
   const profile = DIFFICULTY_PROFILES[difficulty];
-  const random = createRandom(hashSeed(difficulty, seed));
-  const solution = createSolvedGrid(random);
-  const grid = createPuzzleGrid(solution, profile.targetClues, random);
   const normalizedSeed = Math.abs(Math.trunc(seed));
+  let bestCandidate: {
+    grid: SudokuGrid;
+    solution: SudokuGrid;
+    analysis: PuzzleAnalysis;
+  } | null = null;
+
+  for (let attempt = 0; attempt < profile.maxAttempts; attempt += 1) {
+    const random = createRandom(hashSeed(difficulty, normalizedSeed + attempt));
+    const solution = createSolvedGrid(random);
+    const grid = createPuzzleGrid(solution, profile.targetClues, random);
+    const analysis = analyzePuzzle(grid);
+    const candidate = { grid, solution, analysis };
+
+    if (!bestCandidate || analysis.score > bestCandidate.analysis.score) {
+      bestCandidate = candidate;
+    }
+    if (matchesProfile(difficulty, analysis)) {
+      bestCandidate = candidate;
+      break;
+    }
+  }
+
+  if (!bestCandidate) throw new Error(`Unable to generate a ${difficulty} Sudoku puzzle`);
 
   return {
     id: `${profile.code}-${normalizedSeed}`,
     difficulty,
     label: profile.label,
     seed: normalizedSeed,
-    grid,
-    solution,
+    grid: bestCandidate.grid,
+    solution: bestCandidate.solution,
     profile,
-    analysis: analyzePuzzle(grid),
+    analysis: bestCandidate.analysis,
+    matchedProfile: matchesProfile(difficulty, bestCandidate.analysis),
   };
 }
 
