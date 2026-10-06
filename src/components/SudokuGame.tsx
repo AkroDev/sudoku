@@ -82,6 +82,9 @@ export default function SudokuGame({
   const [email, setEmail] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showOptionsIntro, setShowOptionsIntro] = useState(false);
+  const [introDontShowAgain, setIntroDontShowAgain] = useState(false);
   const completionRecorded = useRef(false);
 
   const puzzleId = puzzle.id;
@@ -106,6 +109,21 @@ export default function SudokuGame({
   }, []);
 
   useEffect(() => subscribeToSupabaseSession(setSession), []);
+
+  useEffect(() => {
+    if (window.localStorage.getItem('akrolabs-sudoku-options-intro-v1') !== 'true') {
+      setShowOptionsIntro(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSettingsOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [settingsOpen]);
 
   useEffect(() => {
     setHydrated(false);
@@ -303,6 +321,13 @@ export default function SudokuGame({
     setAuthBusy(false);
   };
 
+  const closeOptionsIntro = () => {
+    if (introDontShowAgain) {
+      window.localStorage.setItem('akrolabs-sudoku-options-intro-v1', 'true');
+    }
+    setShowOptionsIntro(false);
+  };
+
   const activeNumber = useMemo(() => (
     selectedValue ?? (selectedCell === null || selectedRow === null || selectedColumn === null
       ? null
@@ -324,11 +349,23 @@ export default function SudokuGame({
             <p className="brand-subtitle">Sudoku</p>
           </div>
         </div>
-        <div className="topbar-meta">
-          <span>GRILLE</span>
-          <strong>#{puzzleId}</strong>
-          <span className="meta-dot">•</span>
-          <span>{difficultyLabel}</span>
+        <div className="topbar-tools">
+          <div className="topbar-meta">
+            <span>GRILLE</span>
+            <strong>#{puzzleId}</strong>
+            <span className="meta-dot">•</span>
+            <span>{difficultyLabel}</span>
+          </div>
+          <button
+            className="settings-button"
+            type="button"
+            aria-label="Options"
+            title="Options"
+            aria-expanded={settingsOpen}
+            onClick={() => setSettingsOpen((current) => !current)}
+          >
+            <span aria-hidden="true">⚙</span>
+          </button>
         </div>
       </header>
 
@@ -420,100 +457,145 @@ export default function SudokuGame({
         </section>
 
         <aside className="side-column">
-          <section className="panel side-panel">
-            <p className="panel-title">Options</p>
-            <div className="control-list">
-              <div className="control-row">
-                <span>Notes</span>
-                <button className="toggle-button" type="button" aria-pressed={notesMode} onClick={() => setNotesMode((current) => !current)}>
-                  {notesMode ? 'ON' : 'OFF'}
-                </button>
-              </div>
-              <div className="control-row">
-                <span>Surbrillance</span>
-                <button className="toggle-button" type="button" aria-pressed={highlightSame} onClick={() => setHighlightSame((current) => !current)}>
-                  {highlightSame ? 'ON' : 'OFF'}
-                </button>
-              </div>
-              <div className="control-row">
-                <span>Vérification des erreurs</span>
-                <button className="toggle-button" type="button" aria-pressed={checkErrors} onClick={() => setCheckErrors((current) => !current)}>
-                  {checkErrors ? 'ON' : 'OFF'}
-                </button>
-              </div>
+          <a className="panel side-panel hof-link" href={`/sudoku/hall-of-fame?grid=${puzzleId}`} aria-label="Hall of Fame">
+            <div>
+              <p className="panel-title">Hall of Fame</p>
+              <strong>#{puzzleId}</strong>
             </div>
-          </section>
-
-          <section className="panel side-panel">
-            <p className="panel-title">Difficulté</p>
-            <div className="difficulty-row">
-              {DIFFICULTY_ORDER.map((option) => (
-                <button
-                  className="difficulty-button"
-                  key={option}
-                  type="button"
-                  aria-pressed={option === difficulty}
-                  onClick={() => selectDifficulty(option)}
-                >
-                  {DIFFICULTY_PROFILES[option].label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="panel side-panel auth-panel" aria-label="Se connecter pour synchroniser mes statistiques">
-            {session?.user ? (
-              <div className="auth-user">
-                <span className="auth-email">{session.user.email}</span>
-                <button className="action-button" type="button" onClick={() => void signOutFromSupabase()}>
-                  Se déconnecter
-                </button>
-              </div>
-            ) : (
-              <form className="auth-form" onSubmit={handleMagicLinkSubmit}>
-                <label className="field-label" htmlFor="sudoku-email">Adresse e-mail</label>
-                <input
-                  className="auth-input"
-                  id="sudoku-email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    setMagicLinkSent(false);
-                  }}
-                  required
-                />
-                <button className="action-button action-button--primary" type="submit" disabled={authBusy}>
-                  Se connecter pour synchroniser mes statistiques
-                </button>
-                {magicLinkSent && (
-                  <p className="auth-status" role="status">Lien envoyé. Consultez votre boîte mail.</p>
-                )}
-              </form>
-            )}
-          </section>
-
-          <section className="panel side-panel">
-            <p className="panel-title">Statistiques personnelles</p>
-            <div className="stats-grid">
-              <div className="stat-item"><span>Parties terminées</span><strong>{statistics.totalCompleted}</strong></div>
-              <div className="stat-item"><span>Meilleur temps</span><strong>{formatOptionalTime(currentStatistics.bestTime)}</strong></div>
-              <div className="stat-item"><span>Temps moyen</span><strong>{formatOptionalTime(averageTime)}</strong></div>
-              <div className="stat-item"><span>Erreurs</span><strong>{currentStatistics.errors}</strong></div>
-            </div>
-            <p className="field-label history-heading">Historique</p>
-            <ul className="history-list">
-              {statistics.history.slice(0, 5).map((record) => (
-                <li className="history-item" key={`${record.puzzleId}-${record.completedAt}`}>
-                  <strong>#{record.puzzleId}</strong>
-                  <span>{formatTime(record.finalTime)}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+            <span className="hof-arrow" aria-hidden="true">↗</span>
+          </a>
         </aside>
       </div>
+
+      {settingsOpen && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) setSettingsOpen(false);
+        }}>
+          <section className="panel dialog-panel settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+            <div className="dialog-heading">
+              <div>
+                <p className="eyebrow">Options</p>
+                <h2 id="settings-title">Options</h2>
+              </div>
+              <button className="settings-button" type="button" aria-label="Options" title="Options" onClick={() => setSettingsOpen(false)}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+
+            <div className="settings-sections">
+              <section className="settings-section">
+                <p className="panel-title">Options</p>
+                <div className="control-list">
+                  <div className="control-row">
+                    <span>Notes</span>
+                    <button className="toggle-button" type="button" aria-pressed={notesMode} onClick={() => setNotesMode((current) => !current)}>
+                      {notesMode ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  <div className="control-row">
+                    <span>Surbrillance</span>
+                    <button className="toggle-button" type="button" aria-pressed={highlightSame} onClick={() => setHighlightSame((current) => !current)}>
+                      {highlightSame ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  <div className="control-row">
+                    <span>Vérification des erreurs</span>
+                    <button className="toggle-button" type="button" aria-pressed={checkErrors} onClick={() => setCheckErrors((current) => !current)}>
+                      {checkErrors ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <section className="settings-section">
+                <p className="panel-title">Difficulté</p>
+                <div className="difficulty-row">
+                  {DIFFICULTY_ORDER.map((option) => (
+                    <button
+                      className="difficulty-button"
+                      key={option}
+                      type="button"
+                      aria-pressed={option === difficulty}
+                      onClick={() => selectDifficulty(option)}
+                    >
+                      {DIFFICULTY_PROFILES[option].label}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section className="settings-section auth-panel" aria-label="Se connecter pour synchroniser mes statistiques">
+                {session?.user ? (
+                  <div className="auth-user">
+                    <span className="auth-email">{session.user.email}</span>
+                    <button className="action-button" type="button" onClick={() => void signOutFromSupabase()}>
+                      Se déconnecter
+                    </button>
+                  </div>
+                ) : (
+                  <form className="auth-form" onSubmit={handleMagicLinkSubmit}>
+                    <label className="field-label" htmlFor="sudoku-email">Adresse e-mail</label>
+                    <input
+                      className="auth-input"
+                      id="sudoku-email"
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        setMagicLinkSent(false);
+                      }}
+                      required
+                    />
+                    <button className="action-button action-button--primary" type="submit" disabled={authBusy}>
+                      Se connecter pour synchroniser mes statistiques
+                    </button>
+                    {magicLinkSent && (
+                      <p className="auth-status" role="status">Lien envoyé. Consultez votre boîte mail.</p>
+                    )}
+                  </form>
+                )}
+              </section>
+
+              <section className="settings-section">
+                <p className="panel-title">Statistiques personnelles</p>
+                <div className="stats-grid">
+                  <div className="stat-item"><span>Parties terminées</span><strong>{statistics.totalCompleted}</strong></div>
+                  <div className="stat-item"><span>Meilleur temps</span><strong>{formatOptionalTime(currentStatistics.bestTime)}</strong></div>
+                  <div className="stat-item"><span>Temps moyen</span><strong>{formatOptionalTime(averageTime)}</strong></div>
+                  <div className="stat-item"><span>Erreurs</span><strong>{currentStatistics.errors}</strong></div>
+                </div>
+                <p className="field-label history-heading">Historique</p>
+                <ul className="history-list">
+                  {statistics.history.slice(0, 5).map((record) => (
+                    <li className="history-item" key={`${record.puzzleId}-${record.completedAt}`}>
+                      <strong>#{record.puzzleId}</strong>
+                      <span>{formatTime(record.finalTime)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {showOptionsIntro && (
+        <div className="modal-backdrop intro-backdrop">
+          <section className="panel dialog-panel intro-dialog" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+            <p className="eyebrow">AkroLabs · Sudoku</p>
+            <h2 id="intro-title">La roue dentée cache quelques astuces</h2>
+            <p className="dialog-copy">Difficulté, options, statistiques et connexion sont regroupées ici. Le Hall of Fame reste accessible directement.</p>
+            <label className="checkbox-row">
+              <input type="checkbox" checked={introDontShowAgain} onChange={(event) => setIntroDontShowAgain(event.target.checked)} />
+              <span>J’ai compris, on peut cacher cette fenêtre.</span>
+            </label>
+            <button className="action-button action-button--primary" type="button" onClick={closeOptionsIntro}>
+              C’est parti
+            </button>
+          </section>
+        </div>
+      )}
 
       {completed && (
         <section className="panel side-panel" aria-label="Fin de partie">

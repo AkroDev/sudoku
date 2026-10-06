@@ -76,6 +76,12 @@ button {
   margin-bottom: 38px;
 }
 
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -135,6 +141,32 @@ button {
 .topbar-meta strong {
   color: var(--text);
   font-weight: 500;
+}
+
+.settings-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 18px;
+  transition: border-color 140ms ease, background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.settings-button:hover,
+.settings-button:focus-visible {
+  border-color: rgba(249, 115, 22, 0.72);
+  outline: none;
+  background: rgba(249, 115, 22, 0.12);
+  color: var(--text);
+}
+
+.settings-button:active {
+  transform: translateY(1px);
 }
 
 .meta-dot {
@@ -375,6 +407,49 @@ button {
   padding: 22px;
 }
 
+.hof-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.hof-link:hover,
+.hof-link:focus-visible {
+  border-color: rgba(249, 115, 22, 0.58);
+  outline: none;
+  background: linear-gradient(145deg, rgba(249, 115, 22, 0.12), rgba(124, 58, 237, 0.09));
+}
+
+.hof-link:active {
+  transform: translateY(1px);
+}
+
+.hof-link strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hof-arrow {
+  color: var(--orange);
+  font-size: 22px;
+}
+
+.hall-of-fame-card {
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.hall-of-fame-card h1 {
+  margin: 12px 0 0;
+  color: var(--text);
+  font-size: clamp(28px, 5vw, 44px);
+  letter-spacing: -0.05em;
+}
+
 .panel-title {
   margin-bottom: 18px;
   color: var(--text-faint);
@@ -544,6 +619,84 @@ button {
   font-size: 11px;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(4, 4, 6, 0.76);
+  backdrop-filter: blur(14px);
+}
+
+.dialog-panel {
+  width: min(640px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.settings-dialog {
+  display: grid;
+  gap: 28px;
+}
+
+.dialog-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dialog-heading h2,
+.intro-dialog h2 {
+  margin: 8px 0 0;
+  color: var(--text);
+  font-size: clamp(22px, 4vw, 30px);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.settings-sections {
+  display: grid;
+  gap: 26px;
+}
+
+.settings-section + .settings-section {
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+
+.intro-dialog {
+  display: grid;
+  gap: 18px;
+  width: min(520px, 100%);
+}
+
+.dialog-copy {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  accent-color: var(--orange);
+}
+
 .footer-line {
   margin-top: 34px;
   color: var(--text-faint);
@@ -570,7 +723,7 @@ button {
   }
 
   .side-column {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
