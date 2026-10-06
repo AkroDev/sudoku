@@ -740,6 +740,8 @@ button {
 }
 
 .hall-of-fame-card {
+  width: min(100%, 980px);
+  margin: 0 auto;
   padding: clamp(22px, 4vw, 34px);
 }
 
