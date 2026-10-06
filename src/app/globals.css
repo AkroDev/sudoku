@@ -407,8 +407,7 @@ button {
   animation: pause-bitcoin-wander 10s infinite steps(1, end);
 }
 
-.board-overlay .eyebrow,
-.board-overlay .action-button {
+.board-overlay .eyebrow {
   position: relative;
   z-index: 2;
 }
@@ -474,6 +473,10 @@ button {
 .board-actions .action-button {
   min-width: 150px;
   border-color: rgba(248, 250, 252, 0.36);
+}
+
+.board-actions .action-button--primary {
+  border-color: rgba(249, 115, 22, 0.5);
 }
 
 .board-actions .notes-mode-button[aria-pressed='true'] {

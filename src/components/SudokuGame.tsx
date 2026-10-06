@@ -566,9 +566,6 @@ export default function SudokuGame({
               <div className="board-overlay">
                 <span className="pause-bitcoin" aria-hidden="true">₿</span>
                 <p className="eyebrow">Pause</p>
-                <button className="action-button action-button--primary" type="button" onClick={() => setPaused(false)}>
-                  Reprendre
-                </button>
               </div>
             )}
           </div>
@@ -595,7 +592,7 @@ export default function SudokuGame({
                 Notes : {notesMode ? 'ON' : 'OFF'}
               </button>
             )}
-            <button className="action-button" type="button" onClick={() => setPaused((current) => !current)}>
+            <button className="action-button action-button--primary" type="button" onClick={() => setPaused((current) => !current)}>
               {paused ? 'Reprendre' : 'Pause'}
             </button>
           </div>
