@@ -275,7 +275,7 @@ button {
 
 .board-wrap--paused .sudoku-grid {
   transform: rotate(180deg);
-  filter: blur(2px);
+  filter: blur(3px);
 }
 
 .sudoku-grid {
