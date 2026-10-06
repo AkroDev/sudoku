@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import {
   createPuzzle,
   DIFFICULTY_ORDER,
@@ -14,6 +15,7 @@ import {
   type PersonalStatistics,
 } from '@/lib/statistics';
 import { syncCompletedGame } from '@/lib/supabase-stats';
+import { sendMagicLink, signOutFromSupabase, subscribeToSupabaseSession } from '@/lib/supabase-auth';
 
 type Cell = number | null;
 type Grid = Cell[][];
@@ -76,6 +78,10 @@ export default function SudokuGame({
   const [correctCell, setCorrectCell] = useState<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [statistics, setStatistics] = useState<PersonalStatistics>(() => createEmptyStatistics());
+  const [session, setSession] = useState<Session | null>(null);
+  const [email, setEmail] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const completionRecorded = useRef(false);
 
   const puzzleId = puzzle.id;
@@ -98,6 +104,8 @@ export default function SudokuGame({
   useEffect(() => {
     setStatistics(loadStatistics());
   }, []);
+
+  useEffect(() => subscribeToSupabaseSession(setSession), []);
 
   useEffect(() => {
     setHydrated(false);
@@ -286,6 +294,15 @@ export default function SudokuGame({
     setDifficulty(nextDifficulty);
   };
 
+  const handleMagicLinkSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAuthBusy(true);
+    setMagicLinkSent(false);
+    const result = await sendMagicLink(email.trim());
+    if (result.sent) setMagicLinkSent(true);
+    setAuthBusy(false);
+  };
+
   const activeNumber = useMemo(() => (
     selectedValue ?? (selectedCell === null || selectedRow === null || selectedColumn === null
       ? null
@@ -450,6 +467,39 @@ export default function SudokuGame({
                 </button>
               ))}
             </div>
+          </section>
+
+          <section className="panel side-panel auth-panel" aria-label="Se connecter pour synchroniser mes statistiques">
+            {session?.user ? (
+              <div className="auth-user">
+                <span className="auth-email">{session.user.email}</span>
+                <button className="action-button" type="button" onClick={() => void signOutFromSupabase()}>
+                  Se déconnecter
+                </button>
+              </div>
+            ) : (
+              <form className="auth-form" onSubmit={handleMagicLinkSubmit}>
+                <label className="field-label" htmlFor="sudoku-email">Adresse e-mail</label>
+                <input
+                  className="auth-input"
+                  id="sudoku-email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setMagicLinkSent(false);
+                  }}
+                  required
+                />
+                <button className="action-button action-button--primary" type="submit" disabled={authBusy}>
+                  Se connecter pour synchroniser mes statistiques
+                </button>
+                {magicLinkSent && (
+                  <p className="auth-status" role="status">Lien envoyé. Consultez votre boîte mail.</p>
+                )}
+              </form>
+            )}
           </section>
 
           <section className="panel side-panel">

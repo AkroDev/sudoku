@@ -337,6 +337,11 @@ button {
   color: var(--text);
 }
 
+.action-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .board-actions {
   margin-top: 18px;
 }
@@ -454,6 +459,42 @@ button {
   border-color: rgba(249, 115, 22, 0.58);
   background: rgba(249, 115, 22, 0.15);
   color: var(--text);
+}
+
+.auth-form,
+.auth-user {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.auth-input:focus {
+  border-color: rgba(249, 115, 22, 0.72);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.auth-email {
+  overflow-wrap: anywhere;
+  color: var(--text-dim);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.auth-status {
+  margin: 0;
+  color: var(--success);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .stats-grid {
