@@ -483,6 +483,11 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+.ranking-row--empty {
+  min-height: 38px;
+  color: var(--text-faint);
+}
+
 .ranking-row:last-child {
   border-bottom: 0;
 }
@@ -493,6 +498,15 @@ button {
 
 .ranking-time {
   color: var(--text);
+}
+
+.ranking-empty-message {
+  min-width: 0;
+  color: var(--text-faint);
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.35;
+  text-align: right;
 }
 
 .hall-of-fame-card {

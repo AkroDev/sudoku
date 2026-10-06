@@ -131,6 +131,7 @@ export default function SudokuGame({
 
   useEffect(() => {
     let active = true;
+    setHallOfFame([]);
     void loadHallOfFame(puzzleId).then((entries) => {
       if (active) setHallOfFame(entries);
     });
@@ -377,6 +378,12 @@ export default function SudokuGame({
     ? Math.round(currentStatistics.totalTime / currentStatistics.completed)
     : null;
   const formatOptionalTime = (value: number | null) => value === null ? '—' : formatTime(value);
+  const rankingSlots = Array.from({ length: 10 }, (_, index) => hallOfFame[index] ?? null);
+  const emptyRankingMessages = [
+    'En attente d’un nouveau champion',
+    'Éternel second',
+    'Le podium, c’est déjà bien',
+  ];
 
   return (
     <main className="app-shell">
@@ -509,16 +516,37 @@ export default function SudokuGame({
                 <span className="hof-arrow" aria-hidden="true">↗</span>
               </a>
             </div>
-            {hallOfFame.length > 0 && (
-              <ol className="ranking-list" aria-label="Classement">
-                {hallOfFame.map((entry, index) => (
-                  <li className="ranking-row" key={`${entry.puzzleId}-${entry.completedAt}-${index}`}>
-                    <span className="ranking-rank">#{index + 1}</span>
+            <ol className="ranking-list" aria-label="Classement">
+              {rankingSlots.map((entry, index) => (
+                <li className={`ranking-row${entry ? '' : ' ranking-row--empty'}`} key={entry ? `${entry.puzzleId}-${entry.completedAt}-${index}` : `empty-${index}`}>
+                  <span className="ranking-rank">#{index + 1}</span>
+                  {entry ? (
                     <span className="ranking-time">{formatTime(entry.finalTime)}</span>
-                  </li>
-                ))}
-              </ol>
-            )}
+                  ) : (
+                    <span className="ranking-empty-message">{emptyRankingMessages[index] ?? '—'}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="panel side-panel personal-stats-panel" aria-label="Statistiques personnelles">
+            <p className="panel-title">Statistiques personnelles</p>
+            <div className="stats-grid">
+              <div className="stat-item"><span>Parties terminées</span><strong>{statistics.totalCompleted}</strong></div>
+              <div className="stat-item"><span>Meilleur temps</span><strong>{formatOptionalTime(currentStatistics.bestTime)}</strong></div>
+              <div className="stat-item"><span>Temps moyen</span><strong>{formatOptionalTime(averageTime)}</strong></div>
+              <div className="stat-item"><span>Erreurs</span><strong>{currentStatistics.errors}</strong></div>
+            </div>
+            <p className="field-label history-heading">Historique</p>
+            <ul className="history-list">
+              {statistics.history.slice(0, 5).map((record) => (
+                <li className="history-item" key={`${record.puzzleId}-${record.completedAt}`}>
+                  <strong>#{record.puzzleId}</strong>
+                  <span>{formatTime(record.finalTime)}</span>
+                </li>
+              ))}
+            </ul>
           </section>
         </aside>
       </div>
@@ -613,24 +641,6 @@ export default function SudokuGame({
                 )}
               </section>
 
-              <section className="settings-section">
-                <p className="panel-title">Statistiques personnelles</p>
-                <div className="stats-grid">
-                  <div className="stat-item"><span>Parties terminées</span><strong>{statistics.totalCompleted}</strong></div>
-                  <div className="stat-item"><span>Meilleur temps</span><strong>{formatOptionalTime(currentStatistics.bestTime)}</strong></div>
-                  <div className="stat-item"><span>Temps moyen</span><strong>{formatOptionalTime(averageTime)}</strong></div>
-                  <div className="stat-item"><span>Erreurs</span><strong>{currentStatistics.errors}</strong></div>
-                </div>
-                <p className="field-label history-heading">Historique</p>
-                <ul className="history-list">
-                  {statistics.history.slice(0, 5).map((record) => (
-                    <li className="history-item" key={`${record.puzzleId}-${record.completedAt}`}>
-                      <strong>#{record.puzzleId}</strong>
-                      <span>{formatTime(record.finalTime)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
             </div>
           </section>
         </div>
