@@ -717,6 +717,20 @@ button {
   display: inline;
 }
 
+.ranking-list--compact .ranking-row {
+  gap: 6px;
+}
+
+.ranking-list--compact .ranking-score {
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.ranking-list--compact .ranking-name {
+  flex: 0 1 auto;
+  max-width: 120px;
+}
+
 .ranking-name {
   flex: 1;
   min-width: 0;
