@@ -741,6 +741,9 @@ export default function SudokuGame({
                 Hall of Fame ↗
               </a>
             )}
+            <button className="action-button completion-new-game" type="button" onClick={resetGame}>
+              Nouvelle grille
+            </button>
           </section>
         </div>
       )}
