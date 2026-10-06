@@ -215,7 +215,7 @@ button {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .panel {
@@ -469,7 +469,9 @@ button {
 
 .side-column {
   display: grid;
+  grid-template-rows: minmax(min-content, 1fr) auto;
   gap: 20px;
+  height: 100%;
 }
 
 .side-panel {
@@ -1141,6 +1143,8 @@ button {
 
   .side-column {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    height: auto;
   }
 }
 
