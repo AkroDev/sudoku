@@ -275,6 +275,7 @@ button {
 
 .board-wrap--paused .sudoku-grid {
   transform: rotate(180deg);
+  filter: blur(2px);
 }
 
 .sudoku-grid {
@@ -285,7 +286,7 @@ button {
   border: 2px solid var(--line-strong);
   border-radius: 16px;
   background: var(--surface-strong);
-  transition: transform 320ms ease;
+  transition: transform 320ms ease, filter 220ms ease;
 }
 
 .cell {
