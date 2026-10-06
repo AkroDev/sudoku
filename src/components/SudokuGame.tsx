@@ -381,6 +381,8 @@ export default function SudokuGame({
     const result = await submitPublicScore(completedRecord, nickname);
     if (result.submitted || result.reason === 'already-submitted') {
       setPublicScoreSubmitted(true);
+      const entries = await loadHallOfFame(puzzleId);
+      setHallOfFame(entries);
     }
     setPublicScoreBusy(false);
   };
