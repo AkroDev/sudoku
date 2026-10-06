@@ -86,6 +86,8 @@ export default function SudokuGame({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showOptionsIntro, setShowOptionsIntro] = useState(false);
   const [introDontShowAgain, setIntroDontShowAgain] = useState(false);
+  const [confirmNewGameOpen, setConfirmNewGameOpen] = useState(false);
+  const [pendingNewGameDifficulty, setPendingNewGameDifficulty] = useState<Difficulty | null>(null);
   const [hallOfFame, setHallOfFame] = useState<HallOfFameEntry[]>([]);
   const completionRecorded = useRef(false);
 
@@ -312,16 +314,41 @@ export default function SudokuGame({
     return () => window.removeEventListener('keydown', onKeyDown);
   });
 
-  const confirmNewGame = () => started && !completed && !window.confirm('Nouvelle grille ?');
+  const requestNewGame = (nextDifficulty?: Difficulty) => {
+    if (started && !completed) {
+      setPendingNewGameDifficulty(nextDifficulty ?? null);
+      setConfirmNewGameOpen(true);
+      return;
+    }
 
-  const resetGame = () => {
-    if (confirmNewGame()) return;
-    setSeed((current) => current + 1);
+    if (nextDifficulty) {
+      setDifficulty(nextDifficulty);
+    } else {
+      setSeed((current) => current + 1);
+    }
   };
 
+  const cancelNewGame = () => {
+    setConfirmNewGameOpen(false);
+    setPendingNewGameDifficulty(null);
+  };
+
+  const confirmNewGame = () => {
+    const nextDifficulty = pendingNewGameDifficulty;
+    setConfirmNewGameOpen(false);
+    setPendingNewGameDifficulty(null);
+    if (nextDifficulty) {
+      setDifficulty(nextDifficulty);
+    } else {
+      setSeed((current) => current + 1);
+    }
+  };
+
+  const resetGame = () => requestNewGame();
+
   const selectDifficulty = (nextDifficulty: Difficulty) => {
-    if (nextDifficulty === difficulty || confirmNewGame()) return;
-    setDifficulty(nextDifficulty);
+    if (nextDifficulty === difficulty) return;
+    requestNewGame(nextDifficulty);
   };
 
   const handleMagicLinkSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -604,6 +631,24 @@ export default function SudokuGame({
                   ))}
                 </ul>
               </section>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {confirmNewGameOpen && (
+        <div className="modal-backdrop">
+          <section className="panel dialog-panel confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="new-game-title">
+            <p className="eyebrow">Nouvelle grille</p>
+            <h2 id="new-game-title">On change de grille ?</h2>
+            <p className="dialog-copy">La progression actuelle ne sera pas conservée.</p>
+            <div className="dialog-actions">
+              <button className="action-button" type="button" onClick={cancelNewGame}>
+                Rester sur cette grille
+              </button>
+              <button className="action-button action-button--primary" type="button" onClick={confirmNewGame}>
+                Oui, nouvelle grille
+              </button>
             </div>
           </section>
         </div>
