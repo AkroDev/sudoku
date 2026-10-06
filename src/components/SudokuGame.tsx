@@ -1,12 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   createPuzzle,
   DIFFICULTY_ORDER,
   DIFFICULTY_PROFILES,
   type Difficulty,
 } from '@/lib/sudoku';
+import {
+  createEmptyStatistics,
+  loadStatistics,
+  recordCompletedGame,
+  type PersonalStatistics,
+} from '@/lib/statistics';
 
 type Cell = number | null;
 type Grid = Cell[][];
@@ -62,11 +68,14 @@ export default function SudokuGame({
   const [paused, setPaused] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [notesMode, setNotesMode] = useState(false);
+  const [notesUsed, setNotesUsed] = useState(false);
   const [highlightSame, setHighlightSame] = useState(true);
   const [checkErrors, setCheckErrors] = useState(true);
   const [errorCell, setErrorCell] = useState<number | null>(null);
   const [correctCell, setCorrectCell] = useState<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [statistics, setStatistics] = useState<PersonalStatistics>(() => createEmptyStatistics());
+  const completionRecorded = useRef(false);
 
   const puzzleId = puzzle.id;
   const puzzleGrid = puzzle.grid;
@@ -86,6 +95,10 @@ export default function SudokuGame({
     : grid[selectedRow][selectedColumn];
 
   useEffect(() => {
+    setStatistics(loadStatistics());
+  }, []);
+
+  useEffect(() => {
     setHydrated(false);
     setGrid(createInitialGrid(puzzleGrid));
     setNotes(createEmptyNotes());
@@ -96,8 +109,10 @@ export default function SudokuGame({
     setStarted(false);
     setPaused(false);
     setCompleted(false);
+    setNotesUsed(false);
     setErrorCell(null);
     setCorrectCell(null);
+    completionRecorded.current = false;
 
     const saved = window.localStorage.getItem(storageKey);
     if (saved) {
@@ -114,8 +129,10 @@ export default function SudokuGame({
           setPaused(Boolean(state.paused));
           setCompleted(Boolean(state.completed));
           setNotesMode(Boolean(state.notesMode));
+          setNotesUsed(Boolean(state.notesUsed));
           setHighlightSame(state.highlightSame !== false);
           setCheckErrors(state.checkErrors !== false);
+          completionRecorded.current = Boolean(state.completed);
         }
       } catch {
         window.localStorage.removeItem(storageKey);
@@ -137,10 +154,11 @@ export default function SudokuGame({
       paused,
       completed,
       notesMode,
+      notesUsed,
       highlightSame,
       checkErrors,
     }));
-  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, highlightSame, checkErrors, hydrated, storageKey]);
+  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, notesUsed, highlightSame, checkErrors, hydrated, storageKey]);
 
   useEffect(() => {
     if (!started || paused || completed) return;
@@ -154,6 +172,23 @@ export default function SudokuGame({
     if (isFull && isCorrect) {
       setCompleted(true);
       setStarted(false);
+      if (!completionRecorded.current) {
+        const nextStatistics = recordCompletedGame({
+          puzzleId,
+          difficulty,
+          seed,
+          rawTime: elapsedSeconds,
+          penalties,
+          finalTime: elapsedSeconds + penalties,
+          errors,
+          notesUsed,
+          highlightSame,
+          checkErrors,
+          completedAt: Date.now(),
+        });
+        setStatistics(nextStatistics);
+        completionRecorded.current = true;
+      }
     }
   };
 
@@ -166,6 +201,7 @@ export default function SudokuGame({
     if (!started) setStarted(true);
 
     if (notesMode) {
+      setNotesUsed(true);
       setNotes((current) => current.map((notesRow, rowIndex) => notesRow.map((cellNotes, columnIndex) => {
         if (rowIndex !== row || columnIndex !== column) return cellNotes;
         return cellNotes.includes(value)
@@ -252,6 +288,11 @@ export default function SudokuGame({
       ? null
       : grid[selectedRow][selectedColumn])
   ), [grid, selectedCell, selectedRow, selectedColumn, selectedValue]);
+  const currentStatistics = statistics.byDifficulty[difficulty];
+  const averageTime = currentStatistics.completed > 0
+    ? Math.round(currentStatistics.totalTime / currentStatistics.completed)
+    : null;
+  const formatOptionalTime = (value: number | null) => value === null ? '—' : formatTime(value);
 
   return (
     <main className="app-shell">
@@ -407,6 +448,25 @@ export default function SudokuGame({
               ))}
             </div>
           </section>
+
+          <section className="panel side-panel">
+            <p className="panel-title">Statistiques personnelles</p>
+            <div className="stats-grid">
+              <div className="stat-item"><span>Parties terminées</span><strong>{statistics.totalCompleted}</strong></div>
+              <div className="stat-item"><span>Meilleur temps</span><strong>{formatOptionalTime(currentStatistics.bestTime)}</strong></div>
+              <div className="stat-item"><span>Temps moyen</span><strong>{formatOptionalTime(averageTime)}</strong></div>
+              <div className="stat-item"><span>Erreurs</span><strong>{currentStatistics.errors}</strong></div>
+            </div>
+            <p className="field-label history-heading">Historique</p>
+            <ul className="history-list">
+              {statistics.history.slice(0, 5).map((record) => (
+                <li className="history-item" key={`${record.puzzleId}-${record.completedAt}`}>
+                  <strong>#{record.puzzleId}</strong>
+                  <span>{formatTime(record.finalTime)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         </aside>
       </div>
 
@@ -417,6 +477,8 @@ export default function SudokuGame({
           <div className="status-line"><span>Pénalités</span><strong>+{penalties} s</strong></div>
           <div className="status-line"><span>Temps final</span><strong>{formatTime(elapsedSeconds + penalties)}</strong></div>
           <div className="status-line"><span>Erreurs</span><strong>{errors}</strong></div>
+          <div className="status-line"><span>Surbrillance</span><strong>{highlightSame ? 'activée' : 'désactivée'}</strong></div>
+          <div className="status-line"><span>Vérification des erreurs</span><strong>{checkErrors ? 'activée' : 'désactivée'}</strong></div>
         </section>
       )}
 
