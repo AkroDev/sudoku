@@ -521,21 +521,26 @@ button {
 }
 
 .ranking-score {
-  display: grid;
+  display: flex;
+  align-items: center;
+  flex: 1;
   min-width: 0;
-  justify-items: end;
-  gap: 4px;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .ranking-meta {
   display: flex;
-  max-width: 190px;
+  flex: 0 0 auto;
+  align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  flex-wrap: wrap;
+  white-space: nowrap;
 }
 
 .ranking-tag {
+  display: inline-flex;
+  align-items: center;
   padding: 3px 5px;
   border: 1px solid var(--line);
   border-radius: 5px;
@@ -546,7 +551,21 @@ button {
   white-space: nowrap;
 }
 
+.ranking-tag--short {
+  display: none;
+}
+
+.ranking-list--compact .ranking-tag--full {
+  display: none;
+}
+
+.ranking-list--compact .ranking-tag--short {
+  display: inline;
+}
+
 .ranking-name {
+  flex: 1;
+  min-width: 0;
   max-width: 150px;
   overflow: hidden;
   color: var(--text);

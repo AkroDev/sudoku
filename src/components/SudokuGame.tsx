@@ -539,7 +539,7 @@ export default function SudokuGame({
                 <span className="hof-arrow" aria-hidden="true">↗</span>
               </a>
             </div>
-            <ol className="ranking-list" aria-label="Classement">
+            <ol className="ranking-list ranking-list--compact" aria-label="Classement">
               {rankingSlots.map((entry, index) => (
                 entry ? (
                   <RankingRow key={`${entry.puzzleId}-${entry.completedAt}-${index}`} entry={entry} index={index} />
