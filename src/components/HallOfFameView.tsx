@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { EMPTY_RANKING_MESSAGES, loadHallOfFame, type HallOfFameEntry } from '@/lib/hall-of-fame';
-import { formatTime } from '@/lib/time';
+import RankingRow from '@/components/RankingRow';
 
 type HallOfFameViewProps = {
   grid: string | null;
@@ -35,17 +35,14 @@ export default function HallOfFameView({ grid }: HallOfFameViewProps) {
       {grid && (
         <ol className="ranking-list ranking-list--page" aria-label="Classement">
           {rankingSlots.map((entry, index) => (
-            <li className={`ranking-row${entry ? '' : ' ranking-row--empty'}`} key={entry ? `${entry.puzzleId}-${entry.completedAt}-${index}` : `empty-${index}`}>
-              <span className="ranking-rank">#{index + 1}</span>
-              {entry ? (
-                <span className="ranking-score">
-                  <span className="ranking-name">{entry.nickname}</span>
-                  <span className="ranking-time">{formatTime(entry.finalTime)}</span>
-                </span>
-              ) : (
+            entry ? (
+              <RankingRow key={`${entry.puzzleId}-${entry.completedAt}-${index}`} entry={entry} index={index} />
+            ) : (
+              <li className="ranking-row ranking-row--empty" key={`empty-${index}`}>
+                <span className="ranking-rank">#{index + 1}</span>
                 <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
-              )}
-            </li>
+              </li>
+            )
           ))}
         </ol>
       )}

@@ -18,13 +18,15 @@ export default async function HallOfFamePage({ searchParams }: HallOfFamePagePro
   return (
     <main className="app-shell hall-of-fame-page">
       <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">✦</span>
-          <div>
-            <p className="brand-name">AkroLabs</p>
-            <p className="brand-subtitle">Sudoku</p>
+        <a className="brand-link" href="https://akrolabs.fr/fr/labs">
+          <div className="brand">
+            <span className="brand-mark" aria-hidden="true">✦</span>
+            <div>
+              <p className="brand-name">AkroLabs</p>
+              <p className="brand-subtitle">Sudoku</p>
+            </div>
           </div>
-        </div>
+        </a>
         <div className="topbar-meta">
           <span>HALL OF FAME</span>
           {grid && <strong>#{grid}</strong>}

@@ -25,6 +25,7 @@ import {
   submitPublicScore,
 } from '@/lib/public-score';
 import { formatTime } from '@/lib/time';
+import RankingRow from '@/components/RankingRow';
 
 type Cell = number | null;
 type Grid = Cell[][];
@@ -409,13 +410,15 @@ export default function SudokuGame({
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">✦</span>
-          <div>
-            <p className="brand-name">AkroLabs</p>
-            <p className="brand-subtitle">Sudoku</p>
+        <a className="brand-link" href="https://akrolabs.fr/fr/labs">
+          <div className="brand">
+            <span className="brand-mark" aria-hidden="true">✦</span>
+            <div>
+              <p className="brand-name">AkroLabs</p>
+              <p className="brand-subtitle">Sudoku</p>
+            </div>
           </div>
-        </div>
+        </a>
         <div className="topbar-tools">
           <div className="topbar-meta">
             <span>GRILLE</span>
@@ -457,7 +460,7 @@ export default function SudokuGame({
                 const index = rowIndex * 9 + columnIndex;
                 const isGiven = puzzleGrid[rowIndex][columnIndex] !== 0;
                 const isSelected = selectedCell === index;
-                const isRelated = selectedRow !== null && selectedColumn !== null
+                const isRelated = highlightSame && selectedRow !== null && selectedColumn !== null
                   && isSameUnit(rowIndex, columnIndex, selectedRow, selectedColumn);
                 const isSame = highlightSame && activeNumber !== null && value === activeNumber;
                 const classes = [
@@ -538,17 +541,14 @@ export default function SudokuGame({
             </div>
             <ol className="ranking-list" aria-label="Classement">
               {rankingSlots.map((entry, index) => (
-                <li className={`ranking-row${entry ? '' : ' ranking-row--empty'}`} key={entry ? `${entry.puzzleId}-${entry.completedAt}-${index}` : `empty-${index}`}>
-                  <span className="ranking-rank">#{index + 1}</span>
-                  {entry ? (
-                    <span className="ranking-score">
-                      <span className="ranking-name">{entry.nickname}</span>
-                      <span className="ranking-time">{formatTime(entry.finalTime)}</span>
-                    </span>
-                  ) : (
+                entry ? (
+                  <RankingRow key={`${entry.puzzleId}-${entry.completedAt}-${index}`} entry={entry} index={index} />
+                ) : (
+                  <li className="ranking-row ranking-row--empty" key={`empty-${index}`}>
+                    <span className="ranking-rank">#{index + 1}</span>
                     <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
-                  )}
-                </li>
+                  </li>
+                )
               ))}
             </ol>
           </section>
@@ -705,40 +705,44 @@ export default function SudokuGame({
       )}
 
       {completed && (
-        <section className="panel side-panel" aria-label="Fin de partie">
-          <p className="panel-title">Bravo, partie terminée !</p>
-          <p className="completion-grid">Sudoku #{puzzleId}</p>
-          <div className="status-line"><span>Temps</span><strong>{formatTime(elapsedSeconds)}</strong></div>
-          <div className="status-line"><span>Pénalités</span><strong>+{penalties} s</strong></div>
-          <div className="status-line"><span>Temps final</span><strong>{formatTime(elapsedSeconds + penalties)}</strong></div>
-          <div className="status-line"><span>Erreurs</span><strong>{errors}</strong></div>
-          <div className="status-line"><span>Surbrillance</span><strong>{highlightSame ? 'activée' : 'désactivée'}</strong></div>
-          <div className="status-line"><span>Vérification des erreurs</span><strong>{checkErrors ? 'activée' : 'désactivée'}</strong></div>
-          {completedRecord && !publicScoreSubmitted ? (
-            <form className="public-score-form" onSubmit={handlePublicScoreSubmit}>
-              <label className="field-label" htmlFor="sudoku-nickname">Votre pseudo</label>
-              <input
-                className="auth-input"
-                id="sudoku-nickname"
-                type="text"
-                autoComplete="nickname"
-                minLength={PUBLIC_NICKNAME_MIN_LENGTH}
-                maxLength={PUBLIC_NICKNAME_MAX_LENGTH}
-                value={nickname}
-                onChange={(event) => setNickname(event.target.value)}
-                required
-              />
-              <button className="action-button action-button--primary" type="submit" disabled={publicScoreBusy}>
-                Enregistrer mon score
-              </button>
-              <p className="field-hint">Votre pseudo sera visible dans le Hall of Fame.</p>
-            </form>
-          ) : (
-            <a className="action-button action-button--primary completion-hof-link" href={`/sudoku/hall-of-fame?grid=${puzzleId}`}>
-              Hall of Fame ↗
-            </a>
-          )}
-        </section>
+        <div className="modal-backdrop completion-backdrop">
+          <section className="panel dialog-panel completion-dialog" role="dialog" aria-modal="true" aria-labelledby="completion-title">
+            <p className="eyebrow">Sudoku #{puzzleId}</p>
+            <h2 id="completion-title">Bravo, partie terminée !</h2>
+            <div className="completion-summary">
+              <div className="status-line"><span>Temps</span><strong>{formatTime(elapsedSeconds)}</strong></div>
+              <div className="status-line"><span>Pénalités</span><strong>+{penalties} s</strong></div>
+              <div className="status-line"><span>Temps final</span><strong>{formatTime(elapsedSeconds + penalties)}</strong></div>
+              <div className="status-line"><span>Erreurs</span><strong>{errors}</strong></div>
+              <div className="status-line"><span>Surbrillance</span><strong>{highlightSame ? 'activée' : 'désactivée'}</strong></div>
+              <div className="status-line"><span>Vérification des erreurs</span><strong>{checkErrors ? 'activée' : 'désactivée'}</strong></div>
+            </div>
+            {completedRecord && !publicScoreSubmitted ? (
+              <form className="public-score-form" onSubmit={handlePublicScoreSubmit}>
+                <label className="field-label" htmlFor="sudoku-nickname">Votre pseudo</label>
+                <input
+                  className="auth-input"
+                  id="sudoku-nickname"
+                  type="text"
+                  autoComplete="nickname"
+                  minLength={PUBLIC_NICKNAME_MIN_LENGTH}
+                  maxLength={PUBLIC_NICKNAME_MAX_LENGTH}
+                  value={nickname}
+                  onChange={(event) => setNickname(event.target.value)}
+                  required
+                />
+                <button className="action-button action-button--primary" type="submit" disabled={publicScoreBusy}>
+                  Enregistrer mon score
+                </button>
+                <p className="field-hint">Votre pseudo sera visible dans le Hall of Fame.</p>
+              </form>
+            ) : (
+              <a className="action-button action-button--primary completion-hof-link" href={`/sudoku/hall-of-fame?grid=${puzzleId}`}>
+                Hall of Fame ↗
+              </a>
+            )}
+          </section>
+        </div>
       )}
 
       <p className="footer-line">AkroLabs · Sudoku</p>
