@@ -21,7 +21,7 @@ export default function RankingRow({ entry, index, showPuzzleId = false }: Ranki
   ].filter((tag): tag is NonNullable<typeof tag> => tag !== null);
 
   return (
-    <li className="ranking-row" aria-label={`Place ${index + 1}, ${entry.nickname}, ${errorLabel}${showPuzzleId ? `, grille ${entry.puzzleId}` : ''}`}>
+    <li className={`ranking-row${showPuzzleId ? ' ranking-row--global' : ''}`} aria-label={`Place ${index + 1}, ${entry.nickname}, ${errorLabel}${showPuzzleId ? `, grille ${entry.puzzleId}` : ''}`}>
       <span className="ranking-rank">#{index + 1}</span>
       {showPuzzleId && <span className="ranking-grid-id">#{entry.puzzleId}</span>}
       <span className="ranking-score">
