@@ -312,13 +312,13 @@ button {
 .board-overlay {
   position: absolute;
   inset: 0;
+  z-index: 2;
   display: grid;
   place-items: center;
   align-content: center;
   gap: 15px;
   border-radius: 16px;
-  background: rgba(8, 8, 10, 0.95);
-  backdrop-filter: blur(18px);
+  background: var(--bg);
 }
 
 .board-overlay .eyebrow {
@@ -376,6 +376,26 @@ button {
 
 .board-actions {
   margin-top: 18px;
+}
+
+.board-utility-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.board-utility-actions .action-button {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.board-utility-actions .action-button:hover,
+.board-utility-actions .action-button:focus-visible {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-dim);
 }
 
 .number-pad {

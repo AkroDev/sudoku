@@ -451,6 +451,9 @@ export default function SudokuGame({
             <button className="action-button" type="button" onClick={() => setPaused((current) => !current)}>
               {paused ? 'Reprendre' : 'Pause'}
             </button>
+          </div>
+
+          <div className="board-utility-actions">
             <button className="action-button" type="button" onClick={resetGame}>
               Nouvelle grille
             </button>
