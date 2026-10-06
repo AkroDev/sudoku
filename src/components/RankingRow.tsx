@@ -26,14 +26,16 @@ export default function RankingRow({ entry, index, showPuzzleId = false }: Ranki
       {showPuzzleId && <span className="ranking-grid-id">#{entry.puzzleId}</span>}
       <span className="ranking-score">
         <span className="ranking-name">{entry.nickname}</span>
-        <span className="ranking-time">{formatTime(entry.finalTime)}</span>
-        <span className="ranking-meta">
-          {tags.map((tag) => (
-            <span className="ranking-tag" title={tag.title} key={tag.label}>
-              <span className="ranking-tag--full">{tag.label}</span>
-              <span className="ranking-tag--short" aria-hidden="true">{tag.shortLabel}</span>
-            </span>
-          ))}
+        <span className="ranking-time-meta">
+          <span className="ranking-time">{formatTime(entry.finalTime)}</span>
+          <span className="ranking-meta">
+            {tags.map((tag) => (
+              <span className="ranking-tag" title={tag.title} key={tag.label}>
+                <span className="ranking-tag--full">{tag.label}</span>
+                <span className="ranking-tag--short" aria-hidden="true">{tag.shortLabel}</span>
+              </span>
+            ))}
+          </span>
         </span>
       </span>
     </li>

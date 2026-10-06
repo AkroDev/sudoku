@@ -683,6 +683,13 @@ button {
   justify-content: flex-start;
 }
 
+.ranking-time-meta {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
 .ranking-meta {
   display: flex;
   flex: 0 0 auto;
@@ -722,7 +729,7 @@ button {
 }
 
 .ranking-list--compact .ranking-score {
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 6px;
 }
 
