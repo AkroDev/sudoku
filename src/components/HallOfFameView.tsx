@@ -8,6 +8,7 @@ import {
   type HallOfFameEntry,
   type HallOfFameFilters,
 } from '@/lib/hall-of-fame';
+import { DIFFICULTY_ORDER, DIFFICULTY_PROFILES } from '@/lib/sudoku';
 import RankingRow from '@/components/RankingRow';
 import GridLookup from '@/components/GridLookup';
 
@@ -15,16 +16,21 @@ type HallOfFameViewProps = {
   grid: string | null;
 };
 
+function createInitialFilters(grid: string | null): HallOfFameFilters {
+  return grid
+    ? DEFAULT_HALL_OF_FAME_FILTERS
+    : { ...DEFAULT_HALL_OF_FAME_FILTERS, difficulty: 'medium' };
+}
+
 export default function HallOfFameView({ grid }: HallOfFameViewProps) {
   const [entries, setEntries] = useState<HallOfFameEntry[]>([]);
-  const [filters, setFilters] = useState<HallOfFameFilters>(DEFAULT_HALL_OF_FAME_FILTERS);
+  const [filters, setFilters] = useState<HallOfFameFilters>(() => createInitialFilters(grid));
 
   useEffect(() => {
-    if (!grid) {
-      setEntries([]);
-      return;
-    }
+    setFilters(createInitialFilters(grid));
+  }, [grid]);
 
+  useEffect(() => {
     let active = true;
     void loadHallOfFame(grid, filters).then((nextEntries) => {
       if (active) setEntries(nextEntries);
@@ -45,59 +51,75 @@ export default function HallOfFameView({ grid }: HallOfFameViewProps) {
           <a className="grid-return-link" href={`/sudoku/${grid}`}>
             #{grid}
           </a>
-        ) : 'Hall of Fame'}
+        ) : 'Toutes les grilles'}
       </h1>
-      {grid && (
-        <>
-          <div className="hof-filters" aria-label="Filtrer le classement">
-            <label className="hof-filter">
-              <span>Notes</span>
-              <select
-                value={filters.notes}
-                onChange={(event) => setFilters((current) => ({ ...current, notes: event.target.value as HallOfFameFilters['notes'] }))}
-              >
-                <option value="all">Toutes</option>
-                <option value="with">Avec</option>
-                <option value="without">Sans</option>
-              </select>
-            </label>
-            <label className="hof-filter">
-              <span>Surbrillance</span>
-              <select
-                value={filters.highlightSame}
-                onChange={(event) => setFilters((current) => ({ ...current, highlightSame: event.target.value as HallOfFameFilters['highlightSame'] }))}
-              >
-                <option value="all">Toutes</option>
-                <option value="with">Activée</option>
-                <option value="without">Désactivée</option>
-              </select>
-            </label>
-            <label className="hof-filter">
-              <span>Vérification</span>
-              <select
-                value={filters.checkErrors}
-                onChange={(event) => setFilters((current) => ({ ...current, checkErrors: event.target.value as HallOfFameFilters['checkErrors'] }))}
-              >
-                <option value="all">Toutes</option>
-                <option value="with">Activée</option>
-                <option value="without">Désactivée</option>
-              </select>
-            </label>
-          </div>
-          <ol className="ranking-list ranking-list--page" aria-label="Classement">
-            {rankingSlots.map((entry, index) => (
-              entry ? (
-                <RankingRow key={`${entry.puzzleId}-${entry.completedAt}-${index}`} entry={entry} index={index} />
-              ) : (
-                <li className="ranking-row ranking-row--empty" key={`empty-${index}`}>
-                  <span className="ranking-rank">#{index + 1}</span>
-                  <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
-                </li>
-              )
-            ))}
-          </ol>
-        </>
-      )}
+      <div className={`hof-filters${grid ? '' : ' hof-filters--global'}`} aria-label="Filtrer le classement">
+        {!grid && (
+          <label className="hof-filter">
+            <span>Difficulté</span>
+            <select
+              value={filters.difficulty}
+              onChange={(event) => setFilters((current) => ({ ...current, difficulty: event.target.value as HallOfFameFilters['difficulty'] }))}
+            >
+              <option value="all">Toutes</option>
+              {DIFFICULTY_ORDER.map((difficulty) => (
+                <option value={difficulty} key={difficulty}>{DIFFICULTY_PROFILES[difficulty].label}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label className="hof-filter">
+          <span>Notes</span>
+          <select
+            value={filters.notes}
+            onChange={(event) => setFilters((current) => ({ ...current, notes: event.target.value as HallOfFameFilters['notes'] }))}
+          >
+            <option value="all">Toutes</option>
+            <option value="with">Avec</option>
+            <option value="without">Sans</option>
+          </select>
+        </label>
+        <label className="hof-filter">
+          <span>Surbrillance</span>
+          <select
+            value={filters.highlightSame}
+            onChange={(event) => setFilters((current) => ({ ...current, highlightSame: event.target.value as HallOfFameFilters['highlightSame'] }))}
+          >
+            <option value="all">Toutes</option>
+            <option value="with">Activée</option>
+            <option value="without">Désactivée</option>
+          </select>
+        </label>
+        <label className="hof-filter">
+          <span>Vérification</span>
+          <select
+            value={filters.checkErrors}
+            onChange={(event) => setFilters((current) => ({ ...current, checkErrors: event.target.value as HallOfFameFilters['checkErrors'] }))}
+          >
+            <option value="all">Toutes</option>
+            <option value="with">Activée</option>
+            <option value="without">Désactivée</option>
+          </select>
+        </label>
+      </div>
+      <ol className="ranking-list ranking-list--page" aria-label="Classement">
+        {rankingSlots.map((entry, index) => (
+          entry ? (
+            <RankingRow
+              key={`${entry.puzzleId}-${entry.completedAt}-${index}`}
+              entry={entry}
+              index={index}
+              showPuzzleId={!grid}
+            />
+          ) : (
+            <li className="ranking-row ranking-row--empty" key={`empty-${index}`}>
+              <span className="ranking-rank">#{index + 1}</span>
+              {!grid && <span className="ranking-grid-id">—</span>}
+              <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
+            </li>
+          )
+        ))}
+      </ol>
     </section>
   );
 }

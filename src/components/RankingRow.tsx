@@ -5,9 +5,10 @@ import { formatTime } from '@/lib/time';
 type RankingRowProps = {
   entry: HallOfFameEntry;
   index: number;
+  showPuzzleId?: boolean;
 };
 
-export default function RankingRow({ entry, index }: RankingRowProps) {
+export default function RankingRow({ entry, index, showPuzzleId = false }: RankingRowProps) {
   const errorLabel = `${entry.errors} ${entry.errors === 1 ? 'erreur' : 'erreurs'}`;
   const errorShortLabel = `${entry.errors} err.`;
   const difficultyLabel = DIFFICULTY_PROFILES[entry.difficulty].label;
@@ -20,8 +21,9 @@ export default function RankingRow({ entry, index }: RankingRowProps) {
   ].filter((tag): tag is NonNullable<typeof tag> => tag !== null);
 
   return (
-    <li className="ranking-row" aria-label={`Place ${index + 1}, ${entry.nickname}, ${errorLabel}`}>
+    <li className="ranking-row" aria-label={`Place ${index + 1}, ${entry.nickname}, ${errorLabel}${showPuzzleId ? `, grille ${entry.puzzleId}` : ''}`}>
       <span className="ranking-rank">#{index + 1}</span>
+      {showPuzzleId && <span className="ranking-grid-id">#{entry.puzzleId}</span>}
       <span className="ranking-score">
         <span className="ranking-name">{entry.nickname}</span>
         <span className="ranking-time">{formatTime(entry.finalTime)}</span>

@@ -601,6 +601,10 @@ button {
   border-top: 1px solid var(--line);
 }
 
+.hof-filters--global {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .hof-filter {
   display: grid;
   gap: 7px;
@@ -655,6 +659,14 @@ button {
 
 .ranking-rank {
   color: var(--text-faint);
+}
+
+.ranking-grid-id {
+  flex: 0 0 auto;
+  color: var(--violet-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 
 .ranking-score {

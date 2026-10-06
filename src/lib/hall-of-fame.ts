@@ -22,19 +22,21 @@ export type HallOfFameEntry = {
 export type BooleanLeaderboardFilter = 'all' | 'with' | 'without';
 
 export type HallOfFameFilters = {
+  difficulty: Difficulty | 'all';
   notes: BooleanLeaderboardFilter;
   highlightSame: BooleanLeaderboardFilter;
   checkErrors: BooleanLeaderboardFilter;
 };
 
 export const DEFAULT_HALL_OF_FAME_FILTERS: HallOfFameFilters = {
+  difficulty: 'all',
   notes: 'all',
   highlightSame: 'all',
   checkErrors: 'all',
 };
 
 export async function loadHallOfFame(
-  puzzleId: string,
+  puzzleId: string | null,
   filters: HallOfFameFilters = DEFAULT_HALL_OF_FAME_FILTERS,
 ): Promise<HallOfFameEntry[]> {
   const client = getSupabaseBrowserClient();
@@ -42,8 +44,15 @@ export async function loadHallOfFame(
 
   let request = client
     .from('sudoku_leaderboard')
-    .select('puzzle_id, difficulty, nickname, final_time_seconds, errors, notes_used, highlight_same, check_errors, completed_at')
-    .eq('puzzle_id', puzzleId);
+    .select('puzzle_id, difficulty, nickname, final_time_seconds, errors, notes_used, highlight_same, check_errors, completed_at');
+
+  if (puzzleId) {
+    request = request.eq('puzzle_id', puzzleId);
+  }
+
+  if (filters.difficulty !== 'all') {
+    request = request.eq('difficulty', filters.difficulty);
+  }
 
   if (filters.notes !== 'all') {
     request = request.eq('notes_used', filters.notes === 'with');
