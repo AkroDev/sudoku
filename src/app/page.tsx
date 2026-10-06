@@ -1,44 +1,23 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import {
+  createPuzzle,
+  DIFFICULTY_ORDER,
+  DIFFICULTY_PROFILES,
+  type Difficulty,
+} from '@/lib/sudoku';
 
 type Cell = number | null;
 type Grid = Cell[][];
 type NotesGrid = number[][][];
 
-const STORAGE_KEY = 'akrolabs-sudoku-m-1927';
-const PUZZLE_ID = 'M-1927';
-const DIFFICULTY = 'Moyen';
 const ERROR_PENALTY_SECONDS = 15;
+const DEFAULT_DIFFICULTY: Difficulty = 'medium';
+const DEFAULT_SEED = 1927;
 
-const PUZZLE: number[][] = [
-  [5, 3, 0, 0, 7, 0, 0, 0, 0],
-  [6, 0, 0, 1, 9, 5, 0, 0, 0],
-  [0, 9, 8, 0, 0, 0, 0, 6, 0],
-  [8, 0, 0, 0, 6, 0, 0, 0, 3],
-  [4, 0, 0, 8, 0, 3, 0, 0, 1],
-  [7, 0, 0, 0, 2, 0, 0, 0, 6],
-  [0, 6, 0, 0, 0, 0, 2, 8, 0],
-  [0, 0, 0, 4, 1, 9, 0, 0, 5],
-  [0, 0, 0, 0, 8, 0, 0, 7, 9],
-];
-
-const SOLUTION: number[][] = [
-  [5, 3, 4, 6, 7, 8, 9, 1, 2],
-  [6, 7, 2, 1, 9, 5, 3, 4, 8],
-  [1, 9, 8, 3, 4, 2, 5, 6, 7],
-  [8, 5, 9, 7, 6, 1, 4, 2, 3],
-  [4, 2, 6, 8, 5, 3, 7, 9, 1],
-  [7, 1, 3, 9, 2, 4, 8, 5, 6],
-  [9, 6, 1, 5, 3, 7, 2, 8, 4],
-  [2, 8, 7, 4, 1, 9, 6, 3, 5],
-  [3, 4, 5, 2, 8, 6, 1, 7, 9],
-];
-
-const DIFFICULTIES = ['Facile', 'Moyen', 'Difficile', 'Expert'];
-
-function createInitialGrid(): Grid {
-  return PUZZLE.map((row) => row.map((value) => (value === 0 ? null : value)));
+function createInitialGrid(puzzle: number[][]): Grid {
+  return puzzle.map((row) => row.map((value) => (value === 0 ? null : value)));
 }
 
 function createEmptyNotes(): NotesGrid {
@@ -62,7 +41,11 @@ function isSameUnit(row: number, column: number, selectedRow: number, selectedCo
 }
 
 export default function Home() {
-  const [grid, setGrid] = useState<Grid>(createInitialGrid);
+  const [difficulty, setDifficulty] = useState<Difficulty>(DEFAULT_DIFFICULTY);
+  const [seed, setSeed] = useState(DEFAULT_SEED);
+  const puzzle = useMemo(() => createPuzzle(difficulty, seed), [difficulty, seed]);
+  const storageKey = `akrolabs-sudoku-${puzzle.id.toLowerCase()}`;
+  const [grid, setGrid] = useState<Grid>(() => createInitialGrid(puzzle.grid));
   const [notes, setNotes] = useState<NotesGrid>(createEmptyNotes);
   const [selectedCell, setSelectedCell] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -78,6 +61,11 @@ export default function Home() {
   const [correctCell, setCorrectCell] = useState<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
+  const puzzleId = puzzle.id;
+  const puzzleGrid = puzzle.grid;
+  const solution = puzzle.solution;
+  const difficultyLabel = puzzle.label;
+
   const selectedRow = selectedCell === null ? null : Math.floor(selectedCell / 9);
   const selectedColumn = selectedCell === null ? null : selectedCell % 9;
   const selectedValue = selectedCell === null || selectedRow === null || selectedColumn === null
@@ -85,7 +73,20 @@ export default function Home() {
     : grid[selectedRow][selectedColumn];
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
+    setHydrated(false);
+    setGrid(createInitialGrid(puzzleGrid));
+    setNotes(createEmptyNotes());
+    setSelectedCell(null);
+    setElapsedSeconds(0);
+    setPenalties(0);
+    setErrors(0);
+    setStarted(false);
+    setPaused(false);
+    setCompleted(false);
+    setErrorCell(null);
+    setCorrectCell(null);
+
+    const saved = window.localStorage.getItem(storageKey);
     if (saved) {
       try {
         const state = JSON.parse(saved);
@@ -104,15 +105,15 @@ export default function Home() {
           setCheckErrors(state.checkErrors !== false);
         }
       } catch {
-        window.localStorage.removeItem(STORAGE_KEY);
+        window.localStorage.removeItem(storageKey);
       }
     }
     setHydrated(true);
-  }, []);
+  }, [puzzleGrid, storageKey]);
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    window.localStorage.setItem(storageKey, JSON.stringify({
       grid,
       notes,
       selectedCell,
@@ -126,7 +127,7 @@ export default function Home() {
       highlightSame,
       checkErrors,
     }));
-  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, highlightSame, checkErrors, hydrated]);
+  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, highlightSame, checkErrors, hydrated, storageKey]);
 
   useEffect(() => {
     if (!started || paused || completed) return;
@@ -136,7 +137,7 @@ export default function Home() {
 
   const completeGame = (nextGrid: Grid) => {
     const isFull = nextGrid.every((row) => row.every((value) => value !== null));
-    const isCorrect = nextGrid.every((row, rowIndex) => row.every((value, columnIndex) => value === SOLUTION[rowIndex][columnIndex]));
+    const isCorrect = nextGrid.every((row, rowIndex) => row.every((value, columnIndex) => value === solution[rowIndex][columnIndex]));
     if (isFull && isCorrect) {
       setCompleted(true);
       setStarted(false);
@@ -147,7 +148,7 @@ export default function Home() {
     if (selectedCell === null || paused || completed) return;
     const row = Math.floor(selectedCell / 9);
     const column = selectedCell % 9;
-    if (PUZZLE[row][column] !== 0) return;
+    if (puzzleGrid[row][column] !== 0) return;
 
     if (!started) setStarted(true);
 
@@ -161,7 +162,7 @@ export default function Home() {
       return;
     }
 
-    if (checkErrors && value !== SOLUTION[row][column]) {
+    if (checkErrors && value !== solution[row][column]) {
       setErrorCell(selectedCell);
       setErrors((current) => current + 1);
       setPenalties((current) => current + ERROR_PENALTY_SECONDS);
@@ -184,7 +185,7 @@ export default function Home() {
     if (selectedCell === null || paused || completed) return;
     const row = Math.floor(selectedCell / 9);
     const column = selectedCell % 9;
-    if (PUZZLE[row][column] !== 0) return;
+    if (puzzleGrid[row][column] !== 0) return;
     setGrid((current) => current.map((gridRow, rowIndex) => gridRow.map((value, columnIndex) => (
       rowIndex === row && columnIndex === column ? null : value
     ))));
@@ -221,19 +222,16 @@ export default function Home() {
     return () => window.removeEventListener('keydown', onKeyDown);
   });
 
+  const confirmNewGame = () => started && !completed && !window.confirm('Nouvelle grille ?');
+
   const resetGame = () => {
-    if (started && !completed && !window.confirm('Nouvelle grille ?')) return;
-    setGrid(createInitialGrid());
-    setNotes(createEmptyNotes());
-    setSelectedCell(null);
-    setElapsedSeconds(0);
-    setPenalties(0);
-    setErrors(0);
-    setStarted(false);
-    setPaused(false);
-    setCompleted(false);
-    setErrorCell(null);
-    setCorrectCell(null);
+    if (confirmNewGame()) return;
+    setSeed((current) => current + 1);
+  };
+
+  const selectDifficulty = (nextDifficulty: Difficulty) => {
+    if (nextDifficulty === difficulty || confirmNewGame()) return;
+    setDifficulty(nextDifficulty);
   };
 
   const activeNumber = useMemo(() => (
@@ -254,9 +252,9 @@ export default function Home() {
         </div>
         <div className="topbar-meta">
           <span>GRILLE</span>
-          <strong>#{PUZZLE_ID}</strong>
+          <strong>#{puzzleId}</strong>
           <span className="meta-dot">•</span>
-          <span>{DIFFICULTY}</span>
+          <span>{difficultyLabel}</span>
         </div>
       </header>
 
@@ -265,7 +263,7 @@ export default function Home() {
           <div className="board-heading">
             <div>
               <p className="eyebrow">Sudoku</p>
-              <h1>#{PUZZLE_ID}</h1>
+              <h1>#{puzzleId}</h1>
             </div>
             <div className="timer" aria-label="Chronomètre">{formatTime(elapsedSeconds)}</div>
           </div>
@@ -274,7 +272,7 @@ export default function Home() {
             <div className="sudoku-grid" role="grid" aria-label="Grille 9 par 9">
               {grid.map((row, rowIndex) => row.map((value, columnIndex) => {
                 const index = rowIndex * 9 + columnIndex;
-                const isGiven = PUZZLE[rowIndex][columnIndex] !== 0;
+                const isGiven = puzzleGrid[rowIndex][columnIndex] !== 0;
                 const isSelected = selectedCell === index;
                 const isRelated = selectedRow !== null && selectedColumn !== null
                   && isSameUnit(rowIndex, columnIndex, selectedRow, selectedColumn);
@@ -383,15 +381,15 @@ export default function Home() {
           <section className="panel side-panel">
             <p className="panel-title">Difficulté</p>
             <div className="difficulty-row">
-              {DIFFICULTIES.map((difficulty) => (
+              {DIFFICULTY_ORDER.map((option) => (
                 <button
                   className="difficulty-button"
-                  key={difficulty}
+                  key={option}
                   type="button"
-                  aria-pressed={difficulty === DIFFICULTY}
-                  disabled={difficulty !== DIFFICULTY}
+                  aria-pressed={option === difficulty}
+                  onClick={() => selectDifficulty(option)}
                 >
-                  {difficulty}
+                  {DIFFICULTY_PROFILES[option].label}
                 </button>
               ))}
             </div>
@@ -401,7 +399,7 @@ export default function Home() {
 
       {completed && (
         <section className="panel side-panel" aria-label="Fin de partie">
-          <p className="panel-title">Sudoku #{PUZZLE_ID} terminé</p>
+          <p className="panel-title">Sudoku #{puzzleId} terminé</p>
           <div className="status-line"><span>Temps</span><strong>{formatTime(elapsedSeconds)}</strong></div>
           <div className="status-line"><span>Pénalités</span><strong>+{penalties} s</strong></div>
           <div className="status-line"><span>Temps final</span><strong>{formatTime(elapsedSeconds + penalties)}</strong></div>
