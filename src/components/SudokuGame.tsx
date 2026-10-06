@@ -445,11 +445,18 @@ export default function SudokuGame({
           </div>
         </a>
         <div className="topbar-tools">
-          <div className="topbar-meta">
-            <span>GRILLE</span>
-            <strong>#{puzzleId}</strong>
-            <span className="meta-dot">•</span>
-            <span>{difficultyLabel}</span>
+          <div className="topbar-info">
+            <div className="topbar-meta">
+              <span>GRILLE</span>
+              <strong>#{puzzleId}</strong>
+              <span className="meta-dot">•</span>
+              <span>{difficultyLabel}</span>
+            </div>
+            <div className="topbar-options" aria-label="Options actives">
+              {notesMode && <span className="topbar-option">Notes</span>}
+              {highlightSame && <span className="topbar-option">Surbrillance</span>}
+              {checkErrors && <span className="topbar-option">Vérification</span>}
+            </div>
           </div>
           <button
             className="settings-button"
