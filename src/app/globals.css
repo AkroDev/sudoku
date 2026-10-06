@@ -375,13 +375,40 @@ button {
 .board-overlay {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 10;
   display: grid;
   place-items: center;
   align-content: center;
   gap: 15px;
   border-radius: 16px;
   background: rgba(8, 8, 10, 0.2);
+}
+
+.pause-bitcoin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  width: 33.3333%;
+  height: 33.3333%;
+  place-items: center;
+  border: 2px solid rgba(249, 115, 22, 0.7);
+  border-radius: 14px;
+  background: rgba(249, 115, 22, 0.18);
+  box-shadow: 0 0 34px rgba(249, 115, 22, 0.22), inset 0 0 28px rgba(249, 115, 22, 0.12);
+  color: var(--orange-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(58px, 13vw, 132px);
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  animation: pause-bitcoin-wander 10s infinite steps(1, end);
+}
+
+.board-overlay .eyebrow,
+.board-overlay .action-button {
+  position: relative;
+  z-index: 2;
 }
 
 .board-overlay .eyebrow {
@@ -1155,6 +1182,27 @@ button {
 @keyframes correct-flash {
   0% { background: rgba(134, 239, 172, 0.3); }
   100% { background: transparent; }
+}
+
+@keyframes pause-bitcoin-wander {
+  0% { transform: translate(0, 0); }
+  11.111% { transform: translate(100%, 0); }
+  22.222% { transform: translate(200%, 0); }
+  33.333% { transform: translate(200%, 100%); }
+  44.444% { transform: translate(100%, 100%); }
+  55.555% { transform: translate(0, 100%); }
+  66.666% { transform: translate(0, 200%); }
+  77.777% { transform: translate(100%, 200%); }
+  88.888% { transform: translate(200%, 200%); }
+  100% { transform: translate(0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sudoku-grid,
+  .pause-bitcoin {
+    animation: none;
+    transition: none;
+  }
 }
 
 @media (max-width: 820px) {

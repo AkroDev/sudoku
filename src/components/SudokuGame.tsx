@@ -564,6 +564,7 @@ export default function SudokuGame({
 
             {paused && (
               <div className="board-overlay">
+                <span className="pause-bitcoin" aria-hidden="true">₿</span>
                 <p className="eyebrow">Pause</p>
                 <button className="action-button action-button--primary" type="button" onClick={() => setPaused(false)}>
                   Reprendre
