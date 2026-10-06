@@ -226,7 +226,7 @@ button {
 }
 
 .board-panel {
-  padding: clamp(18px, 4vw, 34px);
+  padding: 22px clamp(18px, 4vw, 34px) clamp(18px, 4vw, 34px);
 }
 
 .board-heading {
@@ -480,11 +480,27 @@ button {
 
 .hof-link {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 16px;
   color: var(--text);
   text-decoration: none;
   transition: color 140ms ease;
+}
+
+.hof-copy {
+  width: 100%;
+  min-width: 0;
+}
+
+.hof-link .panel-title {
+  margin-bottom: 7px;
+}
+
+.hof-number-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .hof-link:hover,

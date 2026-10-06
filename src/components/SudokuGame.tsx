@@ -604,11 +604,13 @@ export default function SudokuGame({
           <section className="panel side-panel hof-panel">
             <div className="hof-heading">
               <a className="hof-link" href={`/sudoku/hall-of-fame?grid=${puzzleId}`} aria-label="Hall of Fame">
-                <div>
+                <div className="hof-copy">
                   <p className="panel-title">Hall of Fame</p>
-                  <strong>#{puzzleId}</strong>
+                  <div className="hof-number-line">
+                    <strong>#{puzzleId}</strong>
+                    <span className="hof-arrow" aria-hidden="true">↗</span>
+                  </div>
                 </div>
-                <span className="hof-arrow" aria-hidden="true">↗</span>
               </a>
             </div>
             <ol className="ranking-list ranking-list--compact" aria-label="Classement">
