@@ -592,6 +592,45 @@ button {
   list-style: none;
 }
 
+.hof-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 26px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.hof-filter {
+  display: grid;
+  gap: 7px;
+}
+
+.hof-filter > span {
+  color: var(--text-faint);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hof-filter select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+  background: var(--surface-strong);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.hof-filter select:focus {
+  border-color: rgba(249, 115, 22, 0.72);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
 .ranking-row {
   display: flex;
   align-items: center;
@@ -1264,6 +1303,10 @@ button {
   }
 
   .side-column {
+    grid-template-columns: 1fr;
+  }
+
+  .hof-filters {
     grid-template-columns: 1fr;
   }
 

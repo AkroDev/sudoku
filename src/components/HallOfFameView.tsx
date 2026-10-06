@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { EMPTY_RANKING_MESSAGES, loadHallOfFame, type HallOfFameEntry } from '@/lib/hall-of-fame';
+import {
+  DEFAULT_HALL_OF_FAME_FILTERS,
+  EMPTY_RANKING_MESSAGES,
+  loadHallOfFame,
+  type HallOfFameEntry,
+  type HallOfFameFilters,
+} from '@/lib/hall-of-fame';
 import RankingRow from '@/components/RankingRow';
 import GridLookup from '@/components/GridLookup';
 
@@ -11,6 +17,7 @@ type HallOfFameViewProps = {
 
 export default function HallOfFameView({ grid }: HallOfFameViewProps) {
   const [entries, setEntries] = useState<HallOfFameEntry[]>([]);
+  const [filters, setFilters] = useState<HallOfFameFilters>(DEFAULT_HALL_OF_FAME_FILTERS);
 
   useEffect(() => {
     if (!grid) {
@@ -19,13 +26,13 @@ export default function HallOfFameView({ grid }: HallOfFameViewProps) {
     }
 
     let active = true;
-    void loadHallOfFame(grid).then((nextEntries) => {
+    void loadHallOfFame(grid, filters).then((nextEntries) => {
       if (active) setEntries(nextEntries);
     });
     return () => {
       active = false;
     };
-  }, [grid]);
+  }, [grid, filters]);
 
   const rankingSlots = Array.from({ length: 10 }, (_, index) => entries[index] ?? null);
 
@@ -41,18 +48,55 @@ export default function HallOfFameView({ grid }: HallOfFameViewProps) {
         ) : 'Hall of Fame'}
       </h1>
       {grid && (
-        <ol className="ranking-list ranking-list--page" aria-label="Classement">
-          {rankingSlots.map((entry, index) => (
-            entry ? (
-              <RankingRow key={`${entry.puzzleId}-${entry.completedAt}-${index}`} entry={entry} index={index} />
-            ) : (
-              <li className="ranking-row ranking-row--empty" key={`empty-${index}`}>
-                <span className="ranking-rank">#{index + 1}</span>
-                <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
-              </li>
-            )
-          ))}
-        </ol>
+        <>
+          <div className="hof-filters" aria-label="Filtrer le classement">
+            <label className="hof-filter">
+              <span>Notes</span>
+              <select
+                value={filters.notes}
+                onChange={(event) => setFilters((current) => ({ ...current, notes: event.target.value as HallOfFameFilters['notes'] }))}
+              >
+                <option value="all">Toutes</option>
+                <option value="with">Avec</option>
+                <option value="without">Sans</option>
+              </select>
+            </label>
+            <label className="hof-filter">
+              <span>Surbrillance</span>
+              <select
+                value={filters.highlightSame}
+                onChange={(event) => setFilters((current) => ({ ...current, highlightSame: event.target.value as HallOfFameFilters['highlightSame'] }))}
+              >
+                <option value="all">Toutes</option>
+                <option value="with">Activée</option>
+                <option value="without">Désactivée</option>
+              </select>
+            </label>
+            <label className="hof-filter">
+              <span>Vérification</span>
+              <select
+                value={filters.checkErrors}
+                onChange={(event) => setFilters((current) => ({ ...current, checkErrors: event.target.value as HallOfFameFilters['checkErrors'] }))}
+              >
+                <option value="all">Toutes</option>
+                <option value="with">Activée</option>
+                <option value="without">Désactivée</option>
+              </select>
+            </label>
+          </div>
+          <ol className="ranking-list ranking-list--page" aria-label="Classement">
+            {rankingSlots.map((entry, index) => (
+              entry ? (
+                <RankingRow key={`${entry.puzzleId}-${entry.completedAt}-${index}`} entry={entry} index={index} />
+              ) : (
+                <li className="ranking-row ranking-row--empty" key={`empty-${index}`}>
+                  <span className="ranking-rank">#{index + 1}</span>
+                  <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
+                </li>
+              )
+            ))}
+          </ol>
+        </>
       )}
     </section>
   );

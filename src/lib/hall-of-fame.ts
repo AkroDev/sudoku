@@ -19,14 +19,43 @@ export type HallOfFameEntry = {
   completedAt: string;
 };
 
-export async function loadHallOfFame(puzzleId: string): Promise<HallOfFameEntry[]> {
+export type BooleanLeaderboardFilter = 'all' | 'with' | 'without';
+
+export type HallOfFameFilters = {
+  notes: BooleanLeaderboardFilter;
+  highlightSame: BooleanLeaderboardFilter;
+  checkErrors: BooleanLeaderboardFilter;
+};
+
+export const DEFAULT_HALL_OF_FAME_FILTERS: HallOfFameFilters = {
+  notes: 'all',
+  highlightSame: 'all',
+  checkErrors: 'all',
+};
+
+export async function loadHallOfFame(
+  puzzleId: string,
+  filters: HallOfFameFilters = DEFAULT_HALL_OF_FAME_FILTERS,
+): Promise<HallOfFameEntry[]> {
   const client = getSupabaseBrowserClient();
   if (!client) return [];
 
-  const { data, error } = await client
+  let request = client
     .from('sudoku_leaderboard')
     .select('puzzle_id, difficulty, nickname, final_time_seconds, errors, notes_used, highlight_same, check_errors, completed_at')
-    .eq('puzzle_id', puzzleId)
+    .eq('puzzle_id', puzzleId);
+
+  if (filters.notes !== 'all') {
+    request = request.eq('notes_used', filters.notes === 'with');
+  }
+  if (filters.highlightSame !== 'all') {
+    request = request.eq('highlight_same', filters.highlightSame === 'with');
+  }
+  if (filters.checkErrors !== 'all') {
+    request = request.eq('check_errors', filters.checkErrors === 'with');
+  }
+
+  const { data, error } = await request
     .order('final_time_seconds', { ascending: true })
     .order('completed_at', { ascending: true })
     .limit(10);
