@@ -1,3 +1,5 @@
+import { analyzePuzzle, type PuzzleAnalysis } from './sudoku-analyzer';
+
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 
 export type SudokuGrid = number[][];
@@ -16,6 +18,7 @@ export type GeneratedPuzzle = {
   grid: SudokuGrid;
   solution: SudokuGrid;
   profile: DifficultyProfile;
+  analysis: PuzzleAnalysis;
 };
 
 export const DIFFICULTY_PROFILES: Record<Difficulty, DifficultyProfile> = {
@@ -183,6 +186,7 @@ export function createPuzzle(difficulty: Difficulty, seed: number): GeneratedPuz
     grid,
     solution,
     profile,
+    analysis: analyzePuzzle(grid),
   };
 }
 
