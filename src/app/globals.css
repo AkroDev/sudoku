@@ -399,6 +399,11 @@ button {
 
 .board-actions {
   margin-top: 18px;
+  justify-content: center;
+}
+
+.board-actions .action-button {
+  min-width: 150px;
 }
 
 .number-pad {

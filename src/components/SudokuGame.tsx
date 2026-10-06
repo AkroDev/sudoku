@@ -486,12 +486,6 @@ export default function SudokuGame({
             )}
           </div>
 
-          <div className="board-actions">
-            <button className="action-button" type="button" onClick={() => setPaused((current) => !current)}>
-              {paused ? 'Reprendre' : 'Pause'}
-            </button>
-          </div>
-
           <div className="number-pad" aria-label="Saisie des chiffres">
             {Array.from({ length: 9 }, (_, index) => (
               <button className="number-button" key={index + 1} type="button" onClick={() => enterValue(index + 1)}>
@@ -500,6 +494,12 @@ export default function SudokuGame({
             ))}
             <button className="number-button number-button--clear" type="button" aria-label="Effacer" onClick={clearValue}>
               ×
+            </button>
+          </div>
+
+          <div className="board-actions">
+            <button className="action-button" type="button" onClick={() => setPaused((current) => !current)}>
+              {paused ? 'Reprendre' : 'Pause'}
             </button>
           </div>
         </section>
