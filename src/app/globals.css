@@ -12,6 +12,7 @@
   --orange: #f97316;
   --orange-soft: #ffb37a;
   --violet: #7c3aed;
+  --violet-soft: #a78bfa;
   --danger: #fb7185;
   --success: #86efac;
 }
@@ -201,7 +202,7 @@ button {
 
 .board-heading h1 {
   margin: 7px 0 0;
-  color: var(--violet);
+  color: var(--violet-soft);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: clamp(24px, 5vw, 44px);
   font-variant-numeric: tabular-nums;
