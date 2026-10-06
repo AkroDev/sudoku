@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { EMPTY_RANKING_MESSAGES, loadHallOfFame, type HallOfFameEntry } from '@/lib/hall-of-fame';
 import RankingRow from '@/components/RankingRow';
+import GridLookup from '@/components/GridLookup';
 
 type HallOfFameViewProps = {
   grid: string | null;
@@ -30,6 +31,7 @@ export default function HallOfFameView({ grid }: HallOfFameViewProps) {
 
   return (
     <section className="panel hall-of-fame-card" aria-label="Hall of Fame">
+      <GridLookup initialGrid={grid} />
       <p className="eyebrow">Hall of Fame</p>
       <h1>
         {grid ? (
