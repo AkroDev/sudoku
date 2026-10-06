@@ -94,6 +94,7 @@ export default function SudokuGame({
   const [completedRecord, setCompletedRecord] = useState<CompletedGameRecord | null>(null);
   const [publicScoreBusy, setPublicScoreBusy] = useState(false);
   const [publicScoreSubmitted, setPublicScoreSubmitted] = useState(false);
+  const [replayNoticeOpen, setReplayNoticeOpen] = useState(false);
   const completionRecorded = useRef(false);
 
   const puzzleId = puzzle.id;
@@ -165,6 +166,7 @@ export default function SudokuGame({
     setCorrectCell(null);
     setCompletedRecord(null);
     setPublicScoreSubmitted(false);
+    setReplayNoticeOpen(false);
     completionRecorded.current = false;
 
     const saved = window.localStorage.getItem(storageKey);
@@ -186,6 +188,8 @@ export default function SudokuGame({
           setHighlightSame(state.highlightSame !== false);
           setCheckErrors(state.checkErrors !== false);
           setCompletedRecord(state.completedRecord?.puzzleId === puzzleId ? state.completedRecord : null);
+          setPublicScoreSubmitted(Boolean(state.publicScoreSubmitted));
+          if (state.completed) setReplayNoticeOpen(true);
           completionRecorded.current = Boolean(state.completed);
         }
       } catch {
@@ -212,8 +216,9 @@ export default function SudokuGame({
       highlightSame,
       checkErrors,
       completedRecord,
+      publicScoreSubmitted,
     }));
-  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, notesUsed, highlightSame, checkErrors, completedRecord, hydrated, storageKey]);
+  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, notesUsed, highlightSame, checkErrors, completedRecord, publicScoreSubmitted, hydrated, storageKey]);
 
   useEffect(() => {
     if (!started || paused || completed) return;
@@ -360,6 +365,26 @@ export default function SudokuGame({
   };
 
   const resetGame = () => requestNewGame();
+
+  const restartCurrentPuzzle = () => {
+    setReplayNoticeOpen(false);
+    setGrid(createInitialGrid(puzzleGrid));
+    setNotes(createEmptyNotes());
+    setSelectedCell(null);
+    setElapsedSeconds(0);
+    setPenalties(0);
+    setErrors(0);
+    setStarted(false);
+    setPaused(false);
+    setCompleted(false);
+    setNotesMode(false);
+    setNotesUsed(false);
+    setErrorCell(null);
+    setCorrectCell(null);
+    setCompletedRecord(null);
+    setPublicScoreSubmitted(false);
+    completionRecorded.current = false;
+  };
 
   const selectDifficulty = (nextDifficulty: Difficulty) => {
     if (nextDifficulty === difficulty) return;
@@ -704,7 +729,25 @@ export default function SudokuGame({
         </div>
       )}
 
-      {completed && (
+      {replayNoticeOpen && (
+        <div className="modal-backdrop">
+          <section className="panel dialog-panel replay-dialog" role="dialog" aria-modal="true" aria-labelledby="replay-title">
+            <p className="eyebrow">Hall of Fame</p>
+            <h2 id="replay-title">Cette grille a déjà été jouée</h2>
+            <p className="dialog-copy">Vous pouvez la recommencer et modifier les options si vous le souhaitez. Votre nouveau score ne sera pas ajouté au Hall of Fame.</p>
+            <div className="dialog-actions">
+              <button className="action-button" type="button" onClick={() => setReplayNoticeOpen(false)}>
+                Rester sur le résultat
+              </button>
+              <button className="action-button action-button--primary" type="button" onClick={restartCurrentPuzzle}>
+                Rejouer la grille
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {completed && !replayNoticeOpen && (
         <div className="modal-backdrop completion-backdrop">
           <section className="panel dialog-panel completion-dialog" role="dialog" aria-modal="true" aria-labelledby="completion-title">
             <p className="eyebrow">Sudoku #{puzzleId}</p>
