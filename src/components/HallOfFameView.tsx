@@ -8,27 +8,31 @@ import {
   type HallOfFameEntry,
   type HallOfFameFilters,
 } from '@/lib/hall-of-fame';
-import { DIFFICULTY_ORDER, DIFFICULTY_PROFILES } from '@/lib/sudoku';
+import { DIFFICULTY_ORDER, DIFFICULTY_PROFILES, parsePuzzleId } from '@/lib/sudoku';
 import RankingRow from '@/components/RankingRow';
 import GridLookup from '@/components/GridLookup';
 
 type HallOfFameViewProps = {
   grid: string | null;
+  returnGrid: string | null;
 };
 
-function createInitialFilters(grid: string | null): HallOfFameFilters {
+function createInitialFilters(grid: string | null, returnGrid: string | null): HallOfFameFilters {
   return grid
     ? DEFAULT_HALL_OF_FAME_FILTERS
-    : { ...DEFAULT_HALL_OF_FAME_FILTERS, difficulty: 'medium' };
+    : {
+      ...DEFAULT_HALL_OF_FAME_FILTERS,
+      difficulty: returnGrid ? parsePuzzleId(returnGrid)?.difficulty ?? 'medium' : 'medium',
+    };
 }
 
-export default function HallOfFameView({ grid }: HallOfFameViewProps) {
+export default function HallOfFameView({ grid, returnGrid }: HallOfFameViewProps) {
   const [entries, setEntries] = useState<HallOfFameEntry[]>([]);
-  const [filters, setFilters] = useState<HallOfFameFilters>(() => createInitialFilters(grid));
+  const [filters, setFilters] = useState<HallOfFameFilters>(() => createInitialFilters(grid, returnGrid));
 
   useEffect(() => {
-    setFilters(createInitialFilters(grid));
-  }, [grid]);
+    setFilters(createInitialFilters(grid, returnGrid));
+  }, [grid, returnGrid]);
 
   useEffect(() => {
     let active = true;

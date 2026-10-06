@@ -3,7 +3,7 @@ import { parsePuzzleId } from '@/lib/sudoku';
 import HallOfFameView from '@/components/HallOfFameView';
 
 type HallOfFamePageProps = {
-  searchParams: Promise<{ grid?: string | string[] }>;
+  searchParams: Promise<{ grid?: string | string[]; from?: string | string[] }>;
 };
 
 export const metadata: Metadata = {
@@ -13,7 +13,9 @@ export const metadata: Metadata = {
 export default async function HallOfFamePage({ searchParams }: HallOfFamePageProps) {
   const params = await searchParams;
   const rawGrid = typeof params.grid === 'string' ? params.grid.toUpperCase() : null;
+  const rawFrom = typeof params.from === 'string' ? params.from.toUpperCase() : null;
   const grid = rawGrid && parsePuzzleId(rawGrid) ? rawGrid : null;
+  const returnGrid = rawFrom && parsePuzzleId(rawFrom) ? rawFrom : null;
 
   return (
     <main className="app-shell hall-of-fame-page">
@@ -30,11 +32,12 @@ export default async function HallOfFamePage({ searchParams }: HallOfFamePagePro
         <div className="topbar-meta">
           <span>HALL OF FAME</span>
           {grid && <a className="grid-return-link" href={`/sudoku/${grid}`}>#{grid}</a>}
-          {grid && <a className="grid-return-link" href="/sudoku/hall-of-fame">Toutes les grilles</a>}
+          {!grid && returnGrid && <a className="grid-return-link" href={`/sudoku/${returnGrid}`}>↩ #{returnGrid}</a>}
+          {grid && <a className="grid-return-link" href={`/sudoku/hall-of-fame?from=${grid}`}>Toutes les grilles</a>}
         </div>
       </header>
 
-      <HallOfFameView grid={grid} />
+      <HallOfFameView grid={grid} returnGrid={returnGrid} />
     </main>
   );
 }
