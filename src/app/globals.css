@@ -650,6 +650,7 @@ button {
 
 .ranking-row--empty {
   min-height: 38px;
+  justify-content: flex-start;
   color: var(--text-faint);
 }
 
@@ -730,6 +731,7 @@ button {
 
 .ranking-empty-message {
   min-width: 0;
+  margin-left: auto;
   color: var(--text-faint);
   font-family: inherit;
   font-size: 10px;
