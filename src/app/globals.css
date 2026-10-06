@@ -13,6 +13,7 @@
   --orange-soft: #ffb37a;
   --violet: #7c3aed;
   --violet-soft: #a78bfa;
+  --grid-identity-size: clamp(24px, 5vw, 34px);
   --danger: #fb7185;
   --success: #86efac;
 }
@@ -204,7 +205,7 @@ button {
   margin: 7px 0 0;
   color: var(--violet-soft);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: clamp(24px, 5vw, 44px);
+  font-size: var(--grid-identity-size);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -225,7 +226,7 @@ button {
   justify-self: end;
   color: var(--orange-soft);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: clamp(24px, 5vw, 44px);
+  font-size: var(--grid-identity-size);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -450,8 +451,10 @@ button {
 
 .hof-link strong {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 24px;
+  font-size: var(--grid-identity-size);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  line-height: 1;
 }
 
 .hof-arrow {
