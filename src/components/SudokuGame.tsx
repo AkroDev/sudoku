@@ -422,6 +422,11 @@ export default function SudokuGame({
               <p className="eyebrow">Sudoku</p>
               <h1>#{puzzleId}</h1>
             </div>
+            <div className="board-heading-action">
+              <button className="action-button board-new-game" type="button" onClick={resetGame}>
+                Nouvelle grille
+              </button>
+            </div>
             <div className="timer" aria-label="Chronomètre">{formatTime(elapsedSeconds)}</div>
           </div>
 
@@ -484,12 +489,6 @@ export default function SudokuGame({
           <div className="board-actions">
             <button className="action-button" type="button" onClick={() => setPaused((current) => !current)}>
               {paused ? 'Reprendre' : 'Pause'}
-            </button>
-          </div>
-
-          <div className="board-utility-actions">
-            <button className="action-button" type="button" onClick={resetGame}>
-              Nouvelle grille
             </button>
           </div>
 
