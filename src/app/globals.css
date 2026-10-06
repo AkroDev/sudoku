@@ -10,6 +10,7 @@
   --text-dim: rgba(248, 250, 252, 0.62);
   --text-faint: rgba(248, 250, 252, 0.34);
   --orange: #f97316;
+  --orange-soft: #ffb37a;
   --violet: #7c3aed;
   --danger: #fb7185;
   --success: #86efac;
@@ -200,8 +201,10 @@ button {
 
 .board-heading h1 {
   margin: 7px 0 0;
-  color: var(--orange);
+  color: var(--violet);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: clamp(24px, 5vw, 44px);
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.05em;
   line-height: 1;
 }
@@ -219,7 +222,7 @@ button {
 
 .timer {
   justify-self: end;
-  color: var(--orange);
+  color: var(--orange-soft);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: clamp(24px, 5vw, 44px);
   font-variant-numeric: tabular-nums;
@@ -291,7 +294,7 @@ button {
 }
 
 .cell--user {
-  color: #ffb37a;
+  color: var(--orange-soft);
 }
 
 .cell--related {
