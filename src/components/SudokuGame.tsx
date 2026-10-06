@@ -72,6 +72,7 @@ export default function SudokuGame({
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [notesEnabled, setNotesEnabled] = useState(false);
   const [notesMode, setNotesMode] = useState(false);
   const [notesUsed, setNotesUsed] = useState(false);
   const [highlightSame, setHighlightSame] = useState(true);
@@ -161,6 +162,8 @@ export default function SudokuGame({
     setStarted(false);
     setPaused(false);
     setCompleted(false);
+    setNotesEnabled(false);
+    setNotesMode(false);
     setNotesUsed(false);
     setErrorCell(null);
     setCorrectCell(null);
@@ -183,7 +186,11 @@ export default function SudokuGame({
           setStarted(Boolean(state.started));
           setPaused(Boolean(state.paused));
           setCompleted(Boolean(state.completed));
-          setNotesMode(Boolean(state.notesMode));
+          const savedNotesEnabled = typeof state.notesEnabled === 'boolean'
+            ? state.notesEnabled
+            : Boolean(state.notesMode);
+          setNotesEnabled(savedNotesEnabled);
+          setNotesMode(savedNotesEnabled && Boolean(state.notesMode));
           setNotesUsed(Boolean(state.notesUsed));
           setHighlightSame(state.highlightSame !== false);
           setCheckErrors(state.checkErrors !== false);
@@ -211,6 +218,7 @@ export default function SudokuGame({
       started,
       paused,
       completed,
+      notesEnabled,
       notesMode,
       notesUsed,
       highlightSame,
@@ -218,7 +226,7 @@ export default function SudokuGame({
       completedRecord,
       publicScoreSubmitted,
     }));
-  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, notesUsed, highlightSame, checkErrors, completedRecord, publicScoreSubmitted, hydrated, storageKey]);
+  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesEnabled, notesMode, notesUsed, highlightSame, checkErrors, completedRecord, publicScoreSubmitted, hydrated, storageKey]);
 
   useEffect(() => {
     if (!started || paused || completed) return;
@@ -264,6 +272,7 @@ export default function SudokuGame({
     if (!started) setStarted(true);
 
     if (notesMode) {
+      if (grid[row][column] !== null) return;
       setNotesUsed(true);
       setNotes((current) => current.map((notesRow, rowIndex) => notesRow.map((cellNotes, columnIndex) => {
         if (rowIndex !== row || columnIndex !== column) return cellNotes;
@@ -298,9 +307,30 @@ export default function SudokuGame({
     const row = Math.floor(selectedCell / 9);
     const column = selectedCell % 9;
     if (puzzleGrid[row][column] !== 0) return;
+
+    if (grid[row][column] === null) {
+      setNotes((current) => current.map((notesRow, rowIndex) => notesRow.map((cellNotes, columnIndex) => (
+        rowIndex === row && columnIndex === column ? [] : cellNotes
+      ))));
+      return;
+    }
+
     setGrid((current) => current.map((gridRow, rowIndex) => gridRow.map((value, columnIndex) => (
       rowIndex === row && columnIndex === column ? null : value
     ))));
+  };
+
+  const toggleNotesMode = () => {
+    if (!notesEnabled) return;
+    setNotesMode((current) => !current);
+  };
+
+  const toggleNotesEnabled = () => {
+    setNotesEnabled((current) => {
+      const next = !current;
+      if (!next) setNotesMode(false);
+      return next;
+    });
   };
 
   const moveSelection = (rowDelta: number, columnDelta: number) => {
@@ -453,7 +483,7 @@ export default function SudokuGame({
               <span>{difficultyLabel}</span>
             </div>
             <div className="topbar-options" aria-label="Options actives">
-              {notesMode && <span className="topbar-option">Notes</span>}
+              {notesEnabled && <span className="topbar-option">Notes</span>}
               {highlightSame && <span className="topbar-option">Surbrillance</span>}
               {checkErrors && <span className="topbar-option">Vérification</span>}
             </div>
@@ -554,6 +584,16 @@ export default function SudokuGame({
           </div>
 
           <div className="board-actions">
+            {notesEnabled && (
+              <button
+                className={`action-button notes-mode-button${notesMode ? ' action-button--primary' : ''}`}
+                type="button"
+                aria-pressed={notesMode}
+                onClick={toggleNotesMode}
+              >
+                Notes : {notesMode ? 'ON' : 'OFF'}
+              </button>
+            )}
             <button className="action-button" type="button" onClick={() => setPaused((current) => !current)}>
               {paused ? 'Reprendre' : 'Pause'}
             </button>
@@ -627,8 +667,8 @@ export default function SudokuGame({
                 <div className="control-list">
                   <div className="control-row">
                     <span>Notes</span>
-                    <button className="toggle-button" type="button" aria-pressed={notesMode} onClick={() => setNotesMode((current) => !current)}>
-                      {notesMode ? 'ON' : 'OFF'}
+                    <button className="toggle-button" type="button" aria-pressed={notesEnabled} onClick={toggleNotesEnabled}>
+                      {notesEnabled ? 'ON' : 'OFF'}
                     </button>
                   </div>
                   <div className="control-row">
