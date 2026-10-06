@@ -29,7 +29,7 @@ export default async function HallOfFamePage({ searchParams }: HallOfFamePagePro
         </a>
         <div className="topbar-meta">
           <span>HALL OF FAME</span>
-          {grid && <strong>#{grid}</strong>}
+          {grid && <a className="grid-return-link" href={`/sudoku/${grid}`}>#{grid}</a>}
         </div>
       </header>
 

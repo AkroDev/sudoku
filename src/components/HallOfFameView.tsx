@@ -31,7 +31,13 @@ export default function HallOfFameView({ grid }: HallOfFameViewProps) {
   return (
     <section className="panel hall-of-fame-card" aria-label="Hall of Fame">
       <p className="eyebrow">Hall of Fame</p>
-      <h1>{grid ? `#${grid}` : 'Hall of Fame'}</h1>
+      <h1>
+        {grid ? (
+          <a className="grid-return-link" href={`/sudoku/${grid}`}>
+            #{grid}
+          </a>
+        ) : 'Hall of Fame'}
+      </h1>
       {grid && (
         <ol className="ranking-list ranking-list--page" aria-label="Classement">
           {rankingSlots.map((entry, index) => (

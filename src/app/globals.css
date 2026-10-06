@@ -599,6 +599,18 @@ button {
   letter-spacing: -0.05em;
 }
 
+.grid-return-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 140ms ease;
+}
+
+.grid-return-link:hover,
+.grid-return-link:focus-visible {
+  outline: none;
+  color: var(--violet-soft);
+}
+
 .panel-title {
   margin-bottom: 18px;
   color: var(--text-faint);
