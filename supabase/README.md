@@ -23,3 +23,13 @@ le projet distant et le parcours de connexion seront définis.
   plutôt qu'un accès direct anonyme à toute la table.
 
 La migration n'est pas appliquée automatiquement à un projet distant.
+
+## Projet distant
+
+Le projet Supabase dédié à Sudoku est :
+
+`https://czevkcnyrxywakzgsbpg.supabase.co`
+
+La configuration locale attendue est documentée dans `.env.example`. La clé
+publishable/anon doit rester une variable d'environnement locale et ne doit pas
+être remplacée par une clé secrète ou une clé `service_role` côté navigateur.
