@@ -633,15 +633,9 @@ export default function SudokuGame({
               <div className="stat-item"><span>Temps moyen</span><strong>{formatOptionalTime(averageTime)}</strong></div>
               <div className="stat-item"><span>Erreurs</span><strong>{currentStatistics.errors}</strong></div>
             </div>
-            <p className="field-label history-heading">Historique</p>
-            <ul className="history-list">
-              {statistics.history.slice(0, 5).map((record) => (
-                <li className="history-item" key={`${record.puzzleId}-${record.completedAt}`}>
-                  <strong>#{record.puzzleId}</strong>
-                  <span>{formatTime(record.finalTime)}</span>
-                </li>
-              ))}
-            </ul>
+            <a className="stats-detail-link" href="/sudoku/statistiques">
+              Voir mes statistiques détaillées
+            </a>
           </section>
         </aside>
       </div>
