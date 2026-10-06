@@ -273,6 +273,10 @@ button {
   margin: 0 auto;
 }
 
+.board-wrap--paused .sudoku-grid {
+  transform: rotate(180deg);
+}
+
 .sudoku-grid {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
@@ -281,6 +285,7 @@ button {
   border: 2px solid var(--line-strong);
   border-radius: 16px;
   background: var(--surface-strong);
+  transition: transform 320ms ease;
 }
 
 .cell {
@@ -376,7 +381,7 @@ button {
   align-content: center;
   gap: 15px;
   border-radius: 16px;
-  background: var(--bg);
+  background: rgba(8, 8, 10, 0.2);
 }
 
 .board-overlay .eyebrow {

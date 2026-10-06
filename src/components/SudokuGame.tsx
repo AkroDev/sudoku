@@ -516,7 +516,7 @@ export default function SudokuGame({
             <div className="timer" aria-label="Chronomètre">{formatTime(elapsedSeconds)}</div>
           </div>
 
-          <div className="board-wrap">
+          <div className={`board-wrap${paused ? ' board-wrap--paused' : ''}`}>
             <div className="sudoku-grid" role="grid" aria-label="Grille 9 par 9">
               {grid.map((row, rowIndex) => row.map((value, columnIndex) => {
                 const index = rowIndex * 9 + columnIndex;
