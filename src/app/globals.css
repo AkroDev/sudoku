@@ -381,27 +381,6 @@ button {
   font-size: 10px;
 }
 
-.status-card {
-  display: grid;
-  gap: 7px;
-  padding: 18px;
-  border: 1px solid rgba(249, 115, 22, 0.22);
-  border-radius: 16px;
-  background: linear-gradient(145deg, rgba(249, 115, 22, 0.12), rgba(124, 58, 237, 0.09));
-}
-
-.status-card strong {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 28px;
-  font-variant-numeric: tabular-nums;
-}
-
-.penalty {
-  color: var(--orange);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-}
-
 .control-list {
   display: grid;
   gap: 12px;

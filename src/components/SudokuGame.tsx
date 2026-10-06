@@ -421,14 +421,6 @@ export default function SudokuGame({
 
         <aside className="side-column">
           <section className="panel side-panel">
-            <p className="panel-title">Chronomètre</p>
-            <div className="status-card">
-              <strong>{formatTime(elapsedSeconds)}</strong>
-              <span className="penalty">{penalties > 0 ? `+${penalties} s` : ' '}</span>
-            </div>
-          </section>
-
-          <section className="panel side-panel">
             <p className="panel-title">Options</p>
             <div className="control-list">
               <div className="control-row">
