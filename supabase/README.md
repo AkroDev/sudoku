@@ -24,6 +24,10 @@ le projet distant et le parcours de connexion seront définis.
 
 La migration n'est pas appliquée automatiquement à un projet distant.
 
+La migration `20261006170000_create_public_sudoku_leaderboard.sql` ajoute une
+vue publique limitée aux données nécessaires au classement d'une grille. Elle
+n'expose ni l'adresse e-mail ni le `user_id` Supabase.
+
 ## Projet distant
 
 Le projet Supabase dédié à Sudoku est :

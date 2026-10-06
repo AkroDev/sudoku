@@ -16,6 +16,7 @@ import {
 } from '@/lib/statistics';
 import { syncCompletedGame } from '@/lib/supabase-stats';
 import { sendMagicLink, signOutFromSupabase, subscribeToSupabaseSession } from '@/lib/supabase-auth';
+import { loadHallOfFame, type HallOfFameEntry } from '@/lib/hall-of-fame';
 
 type Cell = number | null;
 type Grid = Cell[][];
@@ -85,6 +86,7 @@ export default function SudokuGame({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showOptionsIntro, setShowOptionsIntro] = useState(false);
   const [introDontShowAgain, setIntroDontShowAgain] = useState(false);
+  const [hallOfFame, setHallOfFame] = useState<HallOfFameEntry[]>([]);
   const completionRecorded = useRef(false);
 
   const puzzleId = puzzle.id;
@@ -124,6 +126,16 @@ export default function SudokuGame({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [settingsOpen]);
+
+  useEffect(() => {
+    let active = true;
+    void loadHallOfFame(puzzleId).then((entries) => {
+      if (active) setHallOfFame(entries);
+    });
+    return () => {
+      active = false;
+    };
+  }, [puzzleId]);
 
   useEffect(() => {
     setHydrated(false);
@@ -457,13 +469,27 @@ export default function SudokuGame({
         </section>
 
         <aside className="side-column">
-          <a className="panel side-panel hof-link" href={`/sudoku/hall-of-fame?grid=${puzzleId}`} aria-label="Hall of Fame">
-            <div>
-              <p className="panel-title">Hall of Fame</p>
-              <strong>#{puzzleId}</strong>
+          <section className="panel side-panel hof-panel">
+            <div className="hof-heading">
+              <a className="hof-link" href={`/sudoku/hall-of-fame?grid=${puzzleId}`} aria-label="Hall of Fame">
+                <div>
+                  <p className="panel-title">Hall of Fame</p>
+                  <strong>#{puzzleId}</strong>
+                </div>
+                <span className="hof-arrow" aria-hidden="true">↗</span>
+              </a>
             </div>
-            <span className="hof-arrow" aria-hidden="true">↗</span>
-          </a>
+            {hallOfFame.length > 0 && (
+              <ol className="ranking-list" aria-label="Classement">
+                {hallOfFame.map((entry, index) => (
+                  <li className="ranking-row" key={`${entry.puzzleId}-${entry.completedAt}-${index}`}>
+                    <span className="ranking-rank">#{index + 1}</span>
+                    <span className="ranking-time">{formatTime(entry.finalTime)}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
         </aside>
       </div>
 
@@ -585,7 +611,7 @@ export default function SudokuGame({
           <section className="panel dialog-panel intro-dialog" role="dialog" aria-modal="true" aria-labelledby="intro-title">
             <p className="eyebrow">AkroLabs · Sudoku</p>
             <h2 id="intro-title">La roue dentée cache quelques astuces</h2>
-            <p className="dialog-copy">Difficulté, options, statistiques et connexion sont regroupées ici. Le Hall of Fame reste accessible directement.</p>
+            <p className="dialog-copy">Difficulté, options, statistiques et connexion sont regroupées ici.</p>
             <label className="checkbox-row">
               <input type="checkbox" checked={introDontShowAgain} onChange={(event) => setIntroDontShowAgain(event.target.checked)} />
               <span>J’ai compris, on peut cacher cette fenêtre.</span>

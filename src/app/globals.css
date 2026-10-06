@@ -410,22 +410,20 @@ button {
 .hof-link {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   color: var(--text);
   text-decoration: none;
-  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+  transition: color 140ms ease;
 }
 
 .hof-link:hover,
 .hof-link:focus-visible {
-  border-color: rgba(249, 115, 22, 0.58);
   outline: none;
-  background: linear-gradient(145deg, rgba(249, 115, 22, 0.12), rgba(124, 58, 237, 0.09));
+  color: var(--orange);
 }
 
 .hof-link:active {
-  transform: translateY(1px);
+  color: var(--text);
 }
 
 .hof-link strong {
@@ -437,6 +435,44 @@ button {
 .hof-arrow {
   color: var(--orange);
   font-size: 22px;
+}
+
+.hof-heading {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ranking-list {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ranking-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-dim);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-row:last-child {
+  border-bottom: 0;
+}
+
+.ranking-rank {
+  color: var(--text-faint);
+}
+
+.ranking-time {
+  color: var(--text);
 }
 
 .hall-of-fame-card {
