@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { parsePuzzleId } from '@/lib/sudoku';
+import HallOfFameView from '@/components/HallOfFameView';
 
 type HallOfFamePageProps = {
   searchParams: Promise<{ grid?: string | string[] }>;
@@ -30,10 +31,7 @@ export default async function HallOfFamePage({ searchParams }: HallOfFamePagePro
         </div>
       </header>
 
-      <section className="panel hall-of-fame-card" aria-label="Hall of Fame">
-        <p className="eyebrow">Hall of Fame</p>
-        <h1>{grid ? `#${grid}` : 'Hall of Fame'}</h1>
-      </section>
+      <HallOfFameView grid={grid} />
     </main>
   );
 }

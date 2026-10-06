@@ -12,11 +12,19 @@ import {
   createEmptyStatistics,
   loadStatistics,
   recordCompletedGame,
+  type CompletedGameRecord,
   type PersonalStatistics,
 } from '@/lib/statistics';
 import { syncCompletedGame } from '@/lib/supabase-stats';
 import { sendMagicLink, signOutFromSupabase, subscribeToSupabaseSession } from '@/lib/supabase-auth';
-import { loadHallOfFame, type HallOfFameEntry } from '@/lib/hall-of-fame';
+import { EMPTY_RANKING_MESSAGES, loadHallOfFame, type HallOfFameEntry } from '@/lib/hall-of-fame';
+import {
+  getStoredPublicNickname,
+  PUBLIC_NICKNAME_MAX_LENGTH,
+  PUBLIC_NICKNAME_MIN_LENGTH,
+  submitPublicScore,
+} from '@/lib/public-score';
+import { formatTime } from '@/lib/time';
 
 type Cell = number | null;
 type Grid = Cell[][];
@@ -31,14 +39,6 @@ function createInitialGrid(puzzle: number[][]): Grid {
 }
 function createEmptyNotes(): NotesGrid {
   return Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => []));
-}
-
-function formatTime(seconds: number) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
-  const parts = hours > 0 ? [hours, minutes, remainingSeconds] : [minutes, remainingSeconds];
-  return parts.map((part) => String(part).padStart(2, '0')).join(':');
 }
 
 function isSameUnit(row: number, column: number, selectedRow: number, selectedColumn: number) {
@@ -89,6 +89,10 @@ export default function SudokuGame({
   const [confirmNewGameOpen, setConfirmNewGameOpen] = useState(false);
   const [pendingNewGameDifficulty, setPendingNewGameDifficulty] = useState<Difficulty | null>(null);
   const [hallOfFame, setHallOfFame] = useState<HallOfFameEntry[]>([]);
+  const [nickname, setNickname] = useState('');
+  const [completedRecord, setCompletedRecord] = useState<CompletedGameRecord | null>(null);
+  const [publicScoreBusy, setPublicScoreBusy] = useState(false);
+  const [publicScoreSubmitted, setPublicScoreSubmitted] = useState(false);
   const completionRecorded = useRef(false);
 
   const puzzleId = puzzle.id;
@@ -113,6 +117,10 @@ export default function SudokuGame({
   }, []);
 
   useEffect(() => subscribeToSupabaseSession(setSession), []);
+
+  useEffect(() => {
+    setNickname(getStoredPublicNickname());
+  }, []);
 
   useEffect(() => {
     if (window.localStorage.getItem('akrolabs-sudoku-options-intro-v1') !== 'true') {
@@ -154,6 +162,8 @@ export default function SudokuGame({
     setNotesUsed(false);
     setErrorCell(null);
     setCorrectCell(null);
+    setCompletedRecord(null);
+    setPublicScoreSubmitted(false);
     completionRecorded.current = false;
 
     const saved = window.localStorage.getItem(storageKey);
@@ -174,6 +184,7 @@ export default function SudokuGame({
           setNotesUsed(Boolean(state.notesUsed));
           setHighlightSame(state.highlightSame !== false);
           setCheckErrors(state.checkErrors !== false);
+          setCompletedRecord(state.completedRecord?.puzzleId === puzzleId ? state.completedRecord : null);
           completionRecorded.current = Boolean(state.completed);
         }
       } catch {
@@ -199,8 +210,9 @@ export default function SudokuGame({
       notesUsed,
       highlightSame,
       checkErrors,
+      completedRecord,
     }));
-  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, notesUsed, highlightSame, checkErrors, hydrated, storageKey]);
+  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesMode, notesUsed, highlightSame, checkErrors, completedRecord, hydrated, storageKey]);
 
   useEffect(() => {
     if (!started || paused || completed) return;
@@ -215,7 +227,7 @@ export default function SudokuGame({
       setCompleted(true);
       setStarted(false);
       if (!completionRecorded.current) {
-        const completedRecord = {
+        const nextCompletedRecord: CompletedGameRecord = {
           puzzleId,
           difficulty,
           seed,
@@ -228,9 +240,10 @@ export default function SudokuGame({
           checkErrors,
           completedAt: Date.now(),
         };
-        const nextStatistics = recordCompletedGame(completedRecord);
+        setCompletedRecord(nextCompletedRecord);
+        const nextStatistics = recordCompletedGame(nextCompletedRecord);
         setStatistics(nextStatistics);
-        void syncCompletedGame(completedRecord);
+        void syncCompletedGame(nextCompletedRecord);
         completionRecorded.current = true;
       }
     }
@@ -361,6 +374,17 @@ export default function SudokuGame({
     setAuthBusy(false);
   };
 
+  const handlePublicScoreSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!completedRecord) return;
+    setPublicScoreBusy(true);
+    const result = await submitPublicScore(completedRecord, nickname);
+    if (result.submitted || result.reason === 'already-submitted') {
+      setPublicScoreSubmitted(true);
+    }
+    setPublicScoreBusy(false);
+  };
+
   const closeOptionsIntro = () => {
     if (introDontShowAgain) {
       window.localStorage.setItem('akrolabs-sudoku-options-intro-v1', 'true');
@@ -379,11 +403,6 @@ export default function SudokuGame({
     : null;
   const formatOptionalTime = (value: number | null) => value === null ? '—' : formatTime(value);
   const rankingSlots = Array.from({ length: 10 }, (_, index) => hallOfFame[index] ?? null);
-  const emptyRankingMessages = [
-    'En attente d’un nouveau champion',
-    'Éternel second ?',
-    'Le podium, c’est déjà bien',
-  ];
 
   return (
     <main className="app-shell">
@@ -520,9 +539,12 @@ export default function SudokuGame({
                 <li className={`ranking-row${entry ? '' : ' ranking-row--empty'}`} key={entry ? `${entry.puzzleId}-${entry.completedAt}-${index}` : `empty-${index}`}>
                   <span className="ranking-rank">#{index + 1}</span>
                   {entry ? (
-                    <span className="ranking-time">{formatTime(entry.finalTime)}</span>
+                    <span className="ranking-score">
+                      <span className="ranking-name">{entry.nickname}</span>
+                      <span className="ranking-time">{formatTime(entry.finalTime)}</span>
+                    </span>
                   ) : (
-                    <span className="ranking-empty-message">{emptyRankingMessages[index] ?? '—'}</span>
+                    <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
                   )}
                 </li>
               ))}
@@ -682,13 +704,38 @@ export default function SudokuGame({
 
       {completed && (
         <section className="panel side-panel" aria-label="Fin de partie">
-          <p className="panel-title">Sudoku #{puzzleId} terminé</p>
+          <p className="panel-title">Bravo, partie terminée !</p>
+          <p className="completion-grid">Sudoku #{puzzleId}</p>
           <div className="status-line"><span>Temps</span><strong>{formatTime(elapsedSeconds)}</strong></div>
           <div className="status-line"><span>Pénalités</span><strong>+{penalties} s</strong></div>
           <div className="status-line"><span>Temps final</span><strong>{formatTime(elapsedSeconds + penalties)}</strong></div>
           <div className="status-line"><span>Erreurs</span><strong>{errors}</strong></div>
           <div className="status-line"><span>Surbrillance</span><strong>{highlightSame ? 'activée' : 'désactivée'}</strong></div>
           <div className="status-line"><span>Vérification des erreurs</span><strong>{checkErrors ? 'activée' : 'désactivée'}</strong></div>
+          {completedRecord && !publicScoreSubmitted ? (
+            <form className="public-score-form" onSubmit={handlePublicScoreSubmit}>
+              <label className="field-label" htmlFor="sudoku-nickname">Votre pseudo</label>
+              <input
+                className="auth-input"
+                id="sudoku-nickname"
+                type="text"
+                autoComplete="nickname"
+                minLength={PUBLIC_NICKNAME_MIN_LENGTH}
+                maxLength={PUBLIC_NICKNAME_MAX_LENGTH}
+                value={nickname}
+                onChange={(event) => setNickname(event.target.value)}
+                required
+              />
+              <button className="action-button action-button--primary" type="submit" disabled={publicScoreBusy}>
+                Enregistrer mon score
+              </button>
+              <p className="field-hint">Votre pseudo sera visible dans le Hall of Fame.</p>
+            </form>
+          ) : (
+            <a className="action-button action-button--primary completion-hof-link" href={`/sudoku/hall-of-fame?grid=${puzzleId}`}>
+              Hall of Fame ↗
+            </a>
+          )}
         </section>
       )}
 

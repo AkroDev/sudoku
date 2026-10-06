@@ -1,7 +1,6 @@
 # Supabase
 
-Cette partie prépare la synchronisation des statistiques personnelles et les
-futurs classements en ligne.
+Cette partie gère les statistiques personnelles et le Hall of Fame public.
 
 ## Migration actuelle
 
@@ -24,9 +23,17 @@ le projet distant et le parcours de connexion seront définis.
 
 La migration n'est pas appliquée automatiquement à un projet distant.
 
-La migration `20261006170000_create_public_sudoku_leaderboard.sql` ajoute une
-vue publique limitée aux données nécessaires au classement d'une grille. Elle
-n'expose ni l'adresse e-mail ni le `user_id` Supabase.
+La migration `20261006170000_create_public_sudoku_leaderboard.sql` a préparé la
+vue de classement. La migration `20261006190000_create_anonymous_sudoku_scores.sql`
+la remplace par une source publique dédiée : un joueur peut enregistrer son
+score avec un pseudo, sans compte ni adresse e-mail. La vue n'expose ni
+l'adresse e-mail, ni le `user_id`, ni l'identifiant anonyme du navigateur.
+
+Les migrations doivent être appliquées dans l'ordre. La migration
+`20261006180000_prevent_duplicate_sudoku_scores.sql` protège les scores privés,
+et la migration `20261006190000_create_anonymous_sudoku_scores.sql` protège les
+scores publics avec un score maximum par navigateur et par grille, ou par
+compte et par grille lorsqu'un compte est disponible.
 
 ## Projet distant
 
