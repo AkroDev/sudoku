@@ -30,7 +30,13 @@ export default function RankingRow({ entry, index, showPuzzleId = false }: Ranki
           <span className="ranking-time">{formatTime(entry.finalTime)}</span>
           <span className="ranking-meta">
             {tags.map((tag) => (
-              <span className="ranking-tag" title={tag.title} key={tag.label}>
+            <span
+              className="ranking-tag"
+              data-tooltip={tag.title}
+              aria-label={tag.title}
+              tabIndex={0}
+              key={tag.label}
+            >
                 <span className="ranking-tag--full">{tag.label}</span>
                 <span className="ranking-tag--short" aria-hidden="true">{tag.shortLabel}</span>
               </span>
