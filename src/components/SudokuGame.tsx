@@ -475,6 +475,7 @@ export default function SudokuGame({
             </div>
           </div>
         </a>
+        <BitcoinPrice />
         <div className="topbar-tools">
           <div className="topbar-info">
             <div className="topbar-meta">
@@ -483,7 +484,6 @@ export default function SudokuGame({
               <span className="meta-dot">•</span>
               <span>{difficultyLabel}</span>
             </div>
-            <BitcoinPrice />
             <div className="topbar-options" aria-label="Options actives">
               {notesEnabled && <span className="topbar-option">Notes</span>}
               {highlightSame && <span className="topbar-option">Surbrillance</span>}

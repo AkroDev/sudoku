@@ -30,8 +30,8 @@ export default async function HallOfFamePage({ searchParams }: HallOfFamePagePro
             </div>
           </div>
         </a>
+        <BitcoinPrice />
         <div className="topbar-page-info">
-          <BitcoinPrice />
           <div className="topbar-meta">
             <span>HALL OF FAME</span>
             {grid && <a className="grid-return-link" href={`/sudoku/${grid}`}>#{grid}</a>}

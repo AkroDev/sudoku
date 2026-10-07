@@ -62,8 +62,8 @@ export default function PersonalStatisticsView() {
             </div>
           </div>
         </a>
+        <BitcoinPrice />
         <div className="topbar-page-info">
-          <BitcoinPrice />
           <div className="topbar-meta">
             <span>STATISTIQUES PERSONNELLES</span>
             <a className="grid-return-link" href="/">Sudoku</a>
