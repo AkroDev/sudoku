@@ -460,12 +460,12 @@ button {
   outline: none;
 }
 
-.support-method--future {
-  border-style: dashed;
-  opacity: 0.58;
+.support-lightning-address {
+  display: grid;
+  gap: 10px;
 }
 
-.support-method--future p {
+.support-lightning-note {
   margin: 0;
   color: var(--text-faint);
   font-size: 9px;

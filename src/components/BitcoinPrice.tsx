@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 const KRAKEN_TICKER_URL = 'https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR%2CXXBTZUSD';
 const REFRESH_INTERVAL_MS = 60_000;
 const ONCHAIN_ADDRESS = 'bc1qwdrmh657exlyvyhwsjrj2a949hsqjh6nh5pdwq';
+const LIGHTNING_ADDRESS = 'akro@walletofsatoshi.com';
 const BITCOIN_URI = `bitcoin:${ONCHAIN_ADDRESS}`;
 const GITHUB_URL = 'https://github.com/AkroDev';
 
@@ -44,6 +45,7 @@ export default function BitcoinPrice() {
   const [supportOpen, setSupportOpen] = useState(false);
   const [qrSvg, setQrSvg] = useState('');
   const [addressCopied, setAddressCopied] = useState(false);
+  const [lightningAddressCopied, setLightningAddressCopied] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -121,6 +123,16 @@ export default function BitcoinPrice() {
     }
   };
 
+  const copyLightningAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(LIGHTNING_ADDRESS);
+      setLightningAddressCopied(true);
+      window.setTimeout(() => setLightningAddressCopied(false), 1800);
+    } catch {
+      setLightningAddressCopied(false);
+    }
+  };
+
   return (
     <div className="bitcoin-widget">
       <div className="bitcoin-price" aria-label="Cours du Bitcoin" aria-live="polite">
@@ -183,12 +195,18 @@ export default function BitcoinPrice() {
             </div>
           </section>
 
-          <section className="support-method support-method--future" aria-label="Lightning bientôt disponible">
+          <section className="support-method support-method--lightning" aria-label="Adresse Lightning">
             <div className="support-method-heading">
               <strong>Lightning</strong>
               <span className="support-method-tag">À venir</span>
             </div>
-            <p>QR Lightning bientôt disponible.</p>
+            <div className="support-lightning-address">
+              <code className="support-address">{LIGHTNING_ADDRESS}</code>
+              <button className="support-copy-button" type="button" onClick={copyLightningAddress}>
+                {lightningAddressCopied ? 'Adresse copiée' : 'Copier l’adresse'}
+              </button>
+            </div>
+            <p className="support-lightning-note">QR Lightning bientôt disponible.</p>
           </section>
         </div>
       )}
