@@ -30,6 +30,7 @@ function formatPrice(value: number | null, currency: 'EUR' | 'USD') {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency,
+    currencyDisplay: 'narrowSymbol',
     maximumFractionDigits: 0,
   }).format(value);
 }

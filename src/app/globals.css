@@ -236,8 +236,8 @@ button {
   flex-wrap: wrap;
   color: var(--orange-soft);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 10px;
-  line-height: 1;
+  font-size: 12px;
+  line-height: 1.1;
   white-space: nowrap;
 }
 
@@ -249,7 +249,7 @@ button {
 
 .bitcoin-price-label {
   color: var(--text-faint);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .bitcoin-price strong {
