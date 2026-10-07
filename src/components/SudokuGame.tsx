@@ -26,6 +26,7 @@ import {
 } from '@/lib/public-score';
 import { formatTime } from '@/lib/time';
 import RankingRow from '@/components/RankingRow';
+import BitcoinPrice from '@/components/BitcoinPrice';
 
 type Cell = number | null;
 type Grid = Cell[][];
@@ -482,6 +483,7 @@ export default function SudokuGame({
               <span className="meta-dot">•</span>
               <span>{difficultyLabel}</span>
             </div>
+            <BitcoinPrice />
             <div className="topbar-options" aria-label="Options actives">
               {notesEnabled && <span className="topbar-option">Notes</span>}
               {highlightSame && <span className="topbar-option">Surbrillance</span>}

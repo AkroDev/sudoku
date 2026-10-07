@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { parsePuzzleId } from '@/lib/sudoku';
 import HallOfFameView from '@/components/HallOfFameView';
+import BitcoinPrice from '@/components/BitcoinPrice';
 
 type HallOfFamePageProps = {
   searchParams: Promise<{ grid?: string | string[]; from?: string | string[] }>;
@@ -29,11 +30,14 @@ export default async function HallOfFamePage({ searchParams }: HallOfFamePagePro
             </div>
           </div>
         </a>
-        <div className="topbar-meta">
-          <span>HALL OF FAME</span>
-          {grid && <a className="grid-return-link" href={`/sudoku/${grid}`}>#{grid}</a>}
-          {!grid && returnGrid && <a className="grid-return-link" href={`/sudoku/${returnGrid}`}>↩ #{returnGrid}</a>}
-          {grid && <a className="grid-return-link" href={`/sudoku/hall-of-fame?from=${grid}`}>Toutes les grilles</a>}
+        <div className="topbar-page-info">
+          <BitcoinPrice />
+          <div className="topbar-meta">
+            <span>HALL OF FAME</span>
+            {grid && <a className="grid-return-link" href={`/sudoku/${grid}`}>#{grid}</a>}
+            {!grid && returnGrid && <a className="grid-return-link" href={`/sudoku/${returnGrid}`}>↩ #{returnGrid}</a>}
+            {grid && <a className="grid-return-link" href={`/sudoku/hall-of-fame?from=${grid}`}>Toutes les grilles</a>}
+          </div>
         </div>
       </header>
 

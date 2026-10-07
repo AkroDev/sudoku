@@ -9,6 +9,7 @@ import {
 } from '@/lib/statistics';
 import { DIFFICULTY_ORDER, DIFFICULTY_PROFILES } from '@/lib/sudoku';
 import { formatTime } from '@/lib/time';
+import BitcoinPrice from '@/components/BitcoinPrice';
 
 function formatOptionalTime(value: number | null) {
   return value === null ? '—' : formatTime(value);
@@ -61,9 +62,12 @@ export default function PersonalStatisticsView() {
             </div>
           </div>
         </a>
-        <div className="topbar-meta">
-          <span>STATISTIQUES PERSONNELLES</span>
-          <a className="grid-return-link" href="/">Sudoku</a>
+        <div className="topbar-page-info">
+          <BitcoinPrice />
+          <div className="topbar-meta">
+            <span>STATISTIQUES PERSONNELLES</span>
+            <a className="grid-return-link" href="/">Sudoku</a>
+          </div>
         </div>
       </header>
 

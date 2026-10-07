@@ -91,6 +91,12 @@ button {
   gap: 7px;
 }
 
+.topbar-page-info {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -209,6 +215,34 @@ button {
   font-size: 9px;
   line-height: 1;
   white-space: nowrap;
+}
+
+.bitcoin-price {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--orange-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bitcoin-price-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.bitcoin-price-label {
+  color: var(--text-faint);
+  font-size: 9px;
+}
+
+.bitcoin-price strong {
+  font-weight: 500;
 }
 
 .game-layout {
