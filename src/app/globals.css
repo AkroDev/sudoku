@@ -85,6 +85,11 @@ button {
   justify-self: center;
 }
 
+.topbar > .topbar-tools,
+.topbar > .topbar-page-info {
+  justify-self: end;
+}
+
 .topbar-tools {
   display: flex;
   align-items: center;
