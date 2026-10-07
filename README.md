@@ -13,6 +13,19 @@ Application Sudoku indépendante, destinée à s'intégrer à l'univers visuel d
 
 Le site vitrine AkroLabs reste dans son dépôt Astro séparé. Ce dépôt contient uniquement l'application Sudoku.
 
+## Développement local
+
+La version Node.js de référence est indiquée dans `.nvmrc`.
+
+```bash
+nvm install
+nvm use
+npm install
+npm run dev
+```
+
+Sur Mac Apple Silicon, `node -p "process.arch"` doit renvoyer `arm64`.
+
 ## État
 
 Dépôt initialisé avec une V1 locale fonctionnelle. Le schéma Supabase est préparé
