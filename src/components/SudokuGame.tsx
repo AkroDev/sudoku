@@ -90,6 +90,7 @@ export default function SudokuGame({
   const [showOptionsIntro, setShowOptionsIntro] = useState(false);
   const [introDontShowAgain, setIntroDontShowAgain] = useState(false);
   const [confirmNewGameOpen, setConfirmNewGameOpen] = useState(false);
+  const [confirmRestartOpen, setConfirmRestartOpen] = useState(false);
   const [pendingNewGameDifficulty, setPendingNewGameDifficulty] = useState<Difficulty | null>(null);
   const [hallOfFame, setHallOfFame] = useState<HallOfFameEntry[]>([]);
   const [nickname, setNickname] = useState('');
@@ -398,6 +399,7 @@ export default function SudokuGame({
   const resetGame = () => requestNewGame();
 
   const restartCurrentPuzzle = () => {
+    setConfirmRestartOpen(false);
     setReplayNoticeOpen(false);
     setGrid(createInitialGrid(puzzleGrid));
     setNotes(createEmptyNotes());
@@ -415,6 +417,15 @@ export default function SudokuGame({
     setCompletedRecord(null);
     setPublicScoreSubmitted(false);
     completionRecorded.current = false;
+  };
+
+  const requestRestartCurrentPuzzle = () => {
+    if (started && !completed) {
+      setConfirmRestartOpen(true);
+      return;
+    }
+
+    restartCurrentPuzzle();
   };
 
   const selectDifficulty = (nextDifficulty: Difficulty) => {
@@ -514,6 +525,11 @@ export default function SudokuGame({
               <button className="action-button board-new-game" type="button" onClick={resetGame}>
                 Nouvelle grille
               </button>
+              {started && !completed && (
+                <button className="action-button board-restart" type="button" onClick={requestRestartCurrentPuzzle}>
+                  Recommencer
+                </button>
+              )}
             </div>
             <div className="timer" aria-label="Chronomètre">{formatTime(elapsedSeconds)}</div>
           </div>
@@ -755,6 +771,23 @@ export default function SudokuGame({
               </button>
               <button className="action-button action-button--primary" type="button" onClick={confirmNewGame}>
                 Oui, nouvelle grille
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {confirmRestartOpen && (
+        <div className="modal-backdrop">
+          <section className="panel dialog-panel confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="restart-title">
+            <h2 id="restart-title">On remet les compteurs à zéro ?</h2>
+            <p className="dialog-copy">La grille actuelle sera conservée, mais votre progression sera effacée.</p>
+            <div className="dialog-actions">
+              <button className="action-button" type="button" onClick={() => setConfirmRestartOpen(false)}>
+                Continuer
+              </button>
+              <button className="action-button action-button--primary" type="button" onClick={restartCurrentPuzzle}>
+                Recommencer
               </button>
             </div>
           </section>
