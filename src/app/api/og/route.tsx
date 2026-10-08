@@ -18,13 +18,14 @@ function getOptionTags(searchParams: URLSearchParams) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const isHomeCard = searchParams.get('mode') === 'home';
   const backgroundUrl = new URL('/share-card-background.png', request.url).toString();
   const parsed = parsePuzzleId(searchParams.get('grid') ?? '');
   const difficulty = parsed?.difficulty ?? 'medium';
   const puzzleId = parsed ? formatPuzzleId(parsed.difficulty, parsed.seed) : 'M-0001';
   const elapsedSeconds = readSeconds(searchParams.get('time'));
   const difficultyLabel = DIFFICULTY_PROFILES[difficulty].label;
-  const optionTags = getOptionTags(searchParams);
+  const optionTags = isHomeCard ? [] : getOptionTags(searchParams);
   const puzzle = parsed
     ? process.env.NEXT_PUBLIC_SUDOKU_START_SEED === '1'
       ? createCatalogPuzzle(difficulty, parsed.seed)
@@ -135,15 +136,17 @@ export async function GET(request: Request) {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
+                justifyContent: isHomeCard ? 'center' : 'flex-start',
                 width: 520,
                 padding: '26px 30px 24px',
                 border: '1px solid rgba(196, 181, 253, 0.34)',
                 borderRadius: 22,
                 background: 'rgba(8, 8, 10, 0.64)',
                 boxShadow: '0 18px 44px rgba(0, 0, 0, 0.28)',
+                minHeight: isHomeCard ? 170 : undefined,
               }}
             >
-              <div
+              {!isHomeCard && <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -157,23 +160,25 @@ export async function GET(request: Request) {
                 <span style={{ color: '#c4b5fd', fontSize: 15, letterSpacing: 2 }}>
                   {difficultyLabel.toUpperCase()}
                 </span>
-              </div>
+              </div>}
               <span
                 style={{
-                  marginTop: 18,
+                  marginTop: isHomeCard ? 0 : 18,
                   color: '#f8fafc',
-                  fontSize: 40,
+                  fontSize: isHomeCard ? 48 : 40,
                   fontWeight: 700,
                   lineHeight: 1.1,
                 }}
               >
-                {elapsedSeconds === null
+                {isHomeCard
+                  ? 'À toi de jouer !'
+                  : elapsedSeconds === null
                   ? 'Une nouvelle grille t’attend.'
                   : `Je viens de terminer cette grille en ${formatTime(elapsedSeconds)}.`}
               </span>
-              <span style={{ marginTop: 20, color: '#c4b5fd', fontSize: 31, fontWeight: 700 }}>
+              {!isHomeCard && <span style={{ marginTop: 20, color: '#c4b5fd', fontSize: 31, fontWeight: 700 }}>
                 À toi de jouer !
-              </span>
+              </span>}
               {optionTags.length > 0 && (
                 <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
                   {optionTags.map((tag) => (
