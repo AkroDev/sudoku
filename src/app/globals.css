@@ -1694,6 +1694,7 @@ button {
   max-width: 390px;
   font-size: 15px;
   line-height: 1.65;
+  text-align: center;
 }
 
 .intro-dialog .checkbox-row {
