@@ -43,6 +43,16 @@ function createEmptyNotes(): NotesGrid {
   return Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => []));
 }
 
+function isSavedGridCompatible(grid: unknown, puzzleGrid: number[][]): grid is Grid {
+  if (!Array.isArray(grid) || grid.length !== 9 || !grid.every((row) => Array.isArray(row) && row.length === 9)) {
+    return false;
+  }
+
+  return puzzleGrid.every((row, rowIndex) => row.every((value, columnIndex) => (
+    value === 0 || grid[rowIndex][columnIndex] === value
+  )));
+}
+
 function isSameUnit(row: number, column: number, selectedRow: number, selectedColumn: number) {
   const sameRow = row === selectedRow;
   const sameColumn = column === selectedColumn;
@@ -99,6 +109,7 @@ export default function SudokuGame({
   const [publicScoreSubmitted, setPublicScoreSubmitted] = useState(false);
   const [replayNoticeOpen, setReplayNoticeOpen] = useState(false);
   const completionRecorded = useRef(false);
+  const lastPersistedStorageKey = useRef<string | null>(null);
 
   const puzzleId = puzzle.id;
   const puzzleGrid = puzzle.grid;
@@ -178,7 +189,9 @@ export default function SudokuGame({
     if (saved) {
       try {
         const state = JSON.parse(saved);
-        if (Array.isArray(state.grid) && Array.isArray(state.notes)) {
+        const isSavedStateForPuzzle = state.puzzleId === puzzleId
+          || (typeof state.puzzleId === 'undefined' && isSavedGridCompatible(state.grid, puzzleGrid));
+        if (isSavedStateForPuzzle && isSavedGridCompatible(state.grid, puzzleGrid) && Array.isArray(state.notes)) {
           setGrid(state.grid);
           setNotes(state.notes);
           setSelectedCell(typeof state.selectedCell === 'number' ? state.selectedCell : null);
@@ -210,7 +223,12 @@ export default function SudokuGame({
 
   useEffect(() => {
     if (!hydrated) return;
+    if (lastPersistedStorageKey.current !== storageKey) {
+      lastPersistedStorageKey.current = storageKey;
+      return;
+    }
     window.localStorage.setItem(storageKey, JSON.stringify({
+      puzzleId,
       grid,
       notes,
       selectedCell,
@@ -228,7 +246,7 @@ export default function SudokuGame({
       completedRecord,
       publicScoreSubmitted,
     }));
-  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesEnabled, notesMode, notesUsed, highlightSame, checkErrors, completedRecord, publicScoreSubmitted, hydrated, storageKey]);
+  }, [grid, notes, selectedCell, elapsedSeconds, penalties, errors, started, paused, completed, notesEnabled, notesMode, notesUsed, highlightSame, checkErrors, completedRecord, publicScoreSubmitted, hydrated, puzzleId, storageKey]);
 
   useEffect(() => {
     if (!started || paused || completed) return;
