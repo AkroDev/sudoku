@@ -662,7 +662,16 @@ export default function SudokuGame({
 
             {paused && (
               <div className="board-overlay">
-                <span className="pause-bitcoin" aria-hidden="true">₿</span>
+                <span className="pause-bitcoin" aria-hidden="true">
+                  <svg className="pause-bitcoin-logo" viewBox="0 0 100 100" aria-hidden="true">
+                    <circle cx="50" cy="50" r="42" fill="rgba(249, 115, 22, 0.96)" stroke="#fff7ed" strokeWidth="3" />
+                    <path d="M43 20v60M57 20v60" fill="none" stroke="#fff7ed" strokeWidth="4" strokeLinecap="round" />
+                    <path
+                      d="M42 28h15c10 0 15 5 15 12 0 5-3 9-8 11 7 2 11 7 11 14 0 9-7 15-18 15H42V28Zm10 9v10h5c4 0 6-2 6-5s-2-5-6-5h-5Zm0 19v15h7c5 0 8-3 8-7 0-5-3-8-8-8h-7Z"
+                      fill="#fff7ed"
+                    />
+                  </svg>
+                </span>
               </div>
             )}
           </div>
