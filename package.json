@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
@@ -25,6 +26,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "latest"
   }
 }

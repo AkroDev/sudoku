@@ -109,8 +109,7 @@ function saveStatistics(statistics: PersonalStatistics) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(statistics));
 }
 
-export function recordCompletedGame(record: CompletedGameRecord) {
-  const current = loadStatistics();
+export function applyCompletedGame(current: PersonalStatistics, record: CompletedGameRecord) {
   const difficulty = current.byDifficulty[record.difficulty];
   const nextDifficulty: DifficultyStatistics = {
     completed: difficulty.completed + 1,
@@ -124,6 +123,11 @@ export function recordCompletedGame(record: CompletedGameRecord) {
     byDifficulty: { ...current.byDifficulty, [record.difficulty]: nextDifficulty },
     history: [record, ...current.history].slice(0, 50),
   };
+  return next;
+}
+
+export function recordCompletedGame(record: CompletedGameRecord) {
+  const next = applyCompletedGame(loadStatistics(), record);
   saveStatistics(next);
   return next;
 }

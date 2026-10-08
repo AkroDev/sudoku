@@ -1,18 +1,6 @@
 import { ImageResponse } from 'next/og';
-import { DIFFICULTY_PROFILES, formatPuzzleId, parsePuzzleId } from '@/lib/sudoku';
+import { createCatalogPuzzle, createPuzzle, DIFFICULTY_PROFILES, formatPuzzleId, parsePuzzleId } from '@/lib/sudoku';
 import { formatTime } from '@/lib/time';
-
-const PREVIEW_GRID = [
-  [4, 7, '', 1, 3, '', 8, 6, 9],
-  ['', 2, 1, 6, '', 9, 4, '', 7],
-  [8, '', 6, 5, 4, 7, '', 1, 2],
-  [7, 6, '', 4, 2, 5, 9, '', 1],
-  [9, 1, 3, '', 7, 6, 2, 4, ''],
-  [2, '', 4, 3, 9, 1, '', 8, 6],
-  [5, 8, 7, 2, '', 4, 6, 9, 3],
-  ['', 3, 9, 7, 5, 8, 1, '', 4],
-  [1, 4, '', 9, 6, 3, 5, 7, 8],
-];
 
 function readSeconds(value: string | null) {
   if (!value || !/^\d+$/.test(value)) return null;
@@ -30,14 +18,19 @@ function getOptionTags(searchParams: URLSearchParams) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const bitcoinLogoUrl = new URL('/bitcoin-logo.svg', request.url).toString();
+  const backgroundUrl = new URL('/share-card-background.png', request.url).toString();
   const parsed = parsePuzzleId(searchParams.get('grid') ?? '');
   const difficulty = parsed?.difficulty ?? 'medium';
   const puzzleId = parsed ? formatPuzzleId(parsed.difficulty, parsed.seed) : 'M-0001';
   const elapsedSeconds = readSeconds(searchParams.get('time'));
   const difficultyLabel = DIFFICULTY_PROFILES[difficulty].label;
   const optionTags = getOptionTags(searchParams);
-  const previewCells = PREVIEW_GRID.flat();
+  const puzzle = parsed
+    ? process.env.NEXT_PUBLIC_SUDOKU_START_SEED === '1'
+      ? createCatalogPuzzle(difficulty, parsed.seed)
+      : createPuzzle(difficulty, parsed.seed)
+    : createPuzzle('medium', 1);
+  const previewCells = puzzle.grid.flat();
 
   return new ImageResponse(
     (
@@ -48,33 +41,77 @@ export async function GET(request: Request) {
           display: 'flex',
           position: 'relative',
           overflow: 'hidden',
-          padding: '54px 64px',
           color: '#f8fafc',
           background: '#08080a',
           fontFamily: 'Arial, Helvetica, sans-serif',
         }}
       >
+        <img
+          src={backgroundUrl}
+          width="1200"
+          height="630"
+          alt=""
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
         <div
           style={{
             position: 'absolute',
             inset: 0,
             display: 'flex',
-            background: 'radial-gradient(circle at 88% 48%, rgba(249, 115, 22, 0.24), transparent 30%), radial-gradient(circle at 12% 100%, rgba(124, 58, 237, 0.25), transparent 38%)',
+            background: 'linear-gradient(90deg, rgba(8, 8, 10, 0.02) 0%, rgba(8, 8, 10, 0.04) 42%, rgba(8, 8, 10, 0.58) 63%, rgba(8, 8, 10, 0.92) 100%)',
           }}
         />
         <div
           style={{
             position: 'absolute',
-            top: 36,
-            right: 46,
-            width: 560,
-            height: 560,
+            left: 326,
+            top: 148,
             display: 'flex',
-            border: '1px solid rgba(249, 115, 22, 0.2)',
-            borderRadius: 280,
-            transform: 'rotate(18deg)',
+            flexWrap: 'wrap',
+            width: 260,
+            height: 260,
+            padding: 8,
+            border: '2px solid rgba(249, 115, 22, 0.78)',
+            borderRadius: 18,
+            background: 'rgba(8, 8, 10, 0.78)',
+            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.28), 0 0 24px rgba(124, 58, 237, 0.24)',
+            transform: 'rotate(-3deg)',
           }}
-        />
+        >
+          {previewCells.map((value, index) => (
+            <div
+              key={index}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '11.1111%',
+                height: '11.1111%',
+                borderRight: index % 9 === 8
+                  ? '0'
+                  : index % 9 === 2 || index % 9 === 5
+                    ? '2px solid rgba(249, 115, 22, 0.5)'
+                    : '1px solid rgba(248, 250, 252, 0.12)',
+                borderBottom: Math.floor(index / 9) === 8
+                  ? '0'
+                  : Math.floor(index / 9) === 2 || Math.floor(index / 9) === 5
+                    ? '2px solid rgba(249, 115, 22, 0.5)'
+                    : '1px solid rgba(248, 250, 252, 0.12)',
+                color: index % 3 === 0 ? '#fb923c' : '#e2e8f0',
+                fontSize: 19,
+                fontWeight: 700,
+              }}
+            >
+              {value === 0 ? '' : value}
+            </div>
+          ))}
+        </div>
         <div
           style={{
             position: 'relative',
@@ -83,38 +120,53 @@ export async function GET(request: Request) {
             justifyContent: 'space-between',
             width: '100%',
             height: '100%',
+            padding: '44px 54px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <span style={{ color: '#f8fafc', fontSize: 24, fontWeight: 700, letterSpacing: 4 }}>AKROLABS.FR</span>
+              <span style={{ color: '#c4b5fd', fontSize: 15, letterSpacing: 5 }}>SUDOKU</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: 520,
+                padding: '26px 30px 24px',
+                border: '1px solid rgba(196, 181, 253, 0.34)',
+                borderRadius: 22,
+                background: 'rgba(8, 8, 10, 0.64)',
+                boxShadow: '0 18px 44px rgba(0, 0, 0, 0.28)',
+              }}
+            >
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 52,
-                  height: 52,
-                  borderRadius: 999,
-                  transform: 'rotate(-6deg)',
-                  boxShadow: '0 8px 18px rgba(249, 115, 22, 0.22)',
+                  justifyContent: 'space-between',
+                  width: '100%',
                 }}
               >
-                <img src={bitcoinLogoUrl} width="52" height="52" alt="" />
+                <span style={{ color: '#fb923c', fontSize: 18, fontWeight: 700, letterSpacing: 2 }}>
+                  GRILLE #{puzzleId}
+                </span>
+                <span style={{ color: '#c4b5fd', fontSize: 15, letterSpacing: 2 }}>
+                  {difficultyLabel.toUpperCase()}
+                </span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: '#f8fafc', fontSize: 24, fontWeight: 700, letterSpacing: 4 }}>AKROLABS</span>
-                <span style={{ color: '#a78bfa', fontSize: 15, letterSpacing: 5 }}>SUDOKU</span>
-              </div>
-            </div>
-            <span style={{ color: '#94a3b8', fontSize: 18, letterSpacing: 2 }}>À TOI DE JOUER</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 54 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 720 }}>
-              <span style={{ color: '#fb923c', fontSize: 22, fontWeight: 700, letterSpacing: 3 }}>
-                GRILLE #{puzzleId} · {difficultyLabel.toUpperCase()}
-              </span>
-              <span style={{ marginTop: 18, color: '#f8fafc', fontSize: 46, fontWeight: 700, lineHeight: 1.1 }}>
+              <span
+                style={{
+                  marginTop: 18,
+                  color: '#f8fafc',
+                  fontSize: 40,
+                  fontWeight: 700,
+                  lineHeight: 1.1,
+                }}
+              >
                 {elapsedSeconds === null
                   ? 'Une nouvelle grille t’attend.'
                   : `Je viens de terminer cette grille en ${formatTime(elapsedSeconds)}.`}
@@ -142,45 +194,9 @@ export async function GET(request: Request) {
                 </div>
               )}
             </div>
-
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                width: 278,
-                height: 278,
-                flexShrink: 0,
-                padding: 9,
-                border: '2px solid rgba(249, 115, 22, 0.75)',
-                borderRadius: 20,
-                background: 'rgba(8, 8, 10, 0.7)',
-                transform: 'rotate(7deg)',
-              }}
-            >
-              {previewCells.map((value, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '11.1111%',
-                    height: '11.1111%',
-                    borderRight: index % 9 === 8 ? '0' : '1px solid rgba(248, 250, 252, 0.12)',
-                    borderBottom: Math.floor(index / 9) === 8 ? '0' : '1px solid rgba(248, 250, 252, 0.12)',
-                    color: index % 3 === 0 ? '#fb923c' : '#e2e8f0',
-                    fontSize: 21,
-                    fontWeight: 700,
-                  }}
-                >
-                  {value}
-                </div>
-              ))}
-            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#64748b', fontSize: 16, letterSpacing: 2 }}>
-            <span>AKROLABS.FR / SUDOKU</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', color: '#c4b5fd', fontSize: 15, letterSpacing: 2 }}>
             <span>BITCOIN · PUZZLES · OPEN-SOURCE</span>
           </div>
         </div>
