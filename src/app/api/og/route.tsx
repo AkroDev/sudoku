@@ -30,6 +30,7 @@ function getOptionTags(searchParams: URLSearchParams) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const bitcoinLogoUrl = new URL('/bitcoin-logo.svg', request.url).toString();
   const parsed = parsePuzzleId(searchParams.get('grid') ?? '');
   const difficulty = parsed?.difficulty ?? 'medium';
   const puzzleId = parsed ? formatPuzzleId(parsed.difficulty, parsed.seed) : 'M-0001';
@@ -91,17 +92,14 @@ export async function GET(request: Request) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: 48,
-                  height: 48,
-                  border: '2px solid #f97316',
-                  borderRadius: 16,
-                  color: '#fb923c',
-                  fontSize: 17,
-                  fontWeight: 700,
-                  letterSpacing: 1,
+                  width: 52,
+                  height: 52,
+                  borderRadius: 999,
+                  transform: 'rotate(-6deg)',
+                  boxShadow: '0 8px 18px rgba(249, 115, 22, 0.22)',
                 }}
               >
-                BTC
+                <img src={bitcoinLogoUrl} width="52" height="52" alt="" />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ color: '#f8fafc', fontSize: 24, fontWeight: 700, letterSpacing: 4 }}>AKROLABS</span>
