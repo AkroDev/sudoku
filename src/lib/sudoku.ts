@@ -226,6 +226,25 @@ export function createPuzzle(difficulty: Difficulty, seed: number): GeneratedPuz
   };
 }
 
+function gridSignature(grid: SudokuGrid) {
+  return grid.map((row) => row.join('')).join('|');
+}
+
+export function findNextDistinctSeed(difficulty: Difficulty, currentSeed: number, currentGrid: SudokuGrid) {
+  const normalizedSeed = Math.max(0, Math.trunc(currentSeed));
+  const currentSignature = gridSignature(currentGrid);
+  const maxSearch = DIFFICULTY_PROFILES[difficulty].maxAttempts * 4;
+
+  for (let offset = 1; offset <= maxSearch; offset += 1) {
+    const nextSeed = normalizedSeed + offset;
+    if (gridSignature(createPuzzle(difficulty, nextSeed).grid) !== currentSignature) {
+      return nextSeed;
+    }
+  }
+
+  return normalizedSeed + DIFFICULTY_PROFILES[difficulty].maxAttempts;
+}
+
 export function parsePuzzleId(id: string) {
   const match = /^([FMDX])-(\d+)$/.exec(id.toUpperCase());
   if (!match) return null;

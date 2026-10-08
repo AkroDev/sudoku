@@ -6,6 +6,7 @@ import {
   createPuzzle,
   DIFFICULTY_ORDER,
   DIFFICULTY_PROFILES,
+  findNextDistinctSeed,
   type Difficulty,
 } from '@/lib/sudoku';
 import {
@@ -391,11 +392,10 @@ export default function SudokuGame({
       return;
     }
 
-    if (nextDifficulty) {
-      setDifficulty(nextDifficulty);
-    } else {
-      setSeed((current) => current + 1);
-    }
+    const targetDifficulty = nextDifficulty ?? difficulty;
+    const nextSeed = findNextDistinctSeed(targetDifficulty, seed, puzzleGrid);
+    if (nextDifficulty) setDifficulty(nextDifficulty);
+    setSeed(nextSeed);
   };
 
   const cancelNewGame = () => {
@@ -407,11 +407,10 @@ export default function SudokuGame({
     const nextDifficulty = pendingNewGameDifficulty;
     setConfirmNewGameOpen(false);
     setPendingNewGameDifficulty(null);
-    if (nextDifficulty) {
-      setDifficulty(nextDifficulty);
-    } else {
-      setSeed((current) => current + 1);
-    }
+    const targetDifficulty = nextDifficulty ?? difficulty;
+    const nextSeed = findNextDistinctSeed(targetDifficulty, seed, puzzleGrid);
+    if (nextDifficulty) setDifficulty(nextDifficulty);
+    setSeed(nextSeed);
   };
 
   const resetGame = () => requestNewGame();
