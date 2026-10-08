@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { parsePuzzleId } from '@/lib/sudoku';
+import { formatPuzzleId, parsePuzzleId } from '@/lib/sudoku';
 import HallOfFameView from '@/components/HallOfFameView';
 import BitcoinPrice from '@/components/BitcoinPrice';
 
@@ -15,8 +15,10 @@ export default async function HallOfFamePage({ searchParams }: HallOfFamePagePro
   const params = await searchParams;
   const rawGrid = typeof params.grid === 'string' ? params.grid.toUpperCase() : null;
   const rawFrom = typeof params.from === 'string' ? params.from.toUpperCase() : null;
-  const grid = rawGrid && parsePuzzleId(rawGrid) ? rawGrid : null;
-  const returnGrid = rawFrom && parsePuzzleId(rawFrom) ? rawFrom : null;
+  const parsedGrid = rawGrid ? parsePuzzleId(rawGrid) : null;
+  const parsedFrom = rawFrom ? parsePuzzleId(rawFrom) : null;
+  const grid = parsedGrid ? formatPuzzleId(parsedGrid.difficulty, parsedGrid.seed) : null;
+  const returnGrid = parsedFrom ? formatPuzzleId(parsedFrom.difficulty, parsedFrom.seed) : null;
 
   return (
     <main className="app-shell hall-of-fame-page">

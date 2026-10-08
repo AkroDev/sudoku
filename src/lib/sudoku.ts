@@ -32,6 +32,11 @@ export const DIFFICULTY_PROFILES: Record<Difficulty, DifficultyProfile> = {
 
 export const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
 
+export function formatPuzzleId(difficulty: Difficulty, seed: number) {
+  const normalizedSeed = Math.max(0, Math.trunc(seed));
+  return `${DIFFICULTY_PROFILES[difficulty].code}-${String(normalizedSeed).padStart(4, '0')}`;
+}
+
 const DIGITS = 9;
 
 function hashSeed(difficulty: Difficulty, seed: number) {
@@ -214,7 +219,7 @@ export function createPuzzle(difficulty: Difficulty, seed: number): GeneratedPuz
   if (!bestCandidate) throw new Error(`Unable to generate a ${difficulty} Sudoku puzzle`);
 
   return {
-    id: `${profile.code}-${normalizedSeed}`,
+    id: formatPuzzleId(difficulty, normalizedSeed),
     difficulty,
     label: profile.label,
     seed: normalizedSeed,

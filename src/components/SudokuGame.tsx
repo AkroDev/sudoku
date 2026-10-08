@@ -35,7 +35,10 @@ type NotesGrid = number[][][];
 
 const ERROR_PENALTY_SECONDS = 15;
 const DEFAULT_DIFFICULTY: Difficulty = 'medium';
-const DEFAULT_SEED = 1927;
+const configuredDefaultSeed = Number(process.env.NEXT_PUBLIC_SUDOKU_START_SEED);
+const DEFAULT_SEED = Number.isSafeInteger(configuredDefaultSeed) && configuredDefaultSeed >= 0
+  ? configuredDefaultSeed
+  : 1927;
 
 function createInitialGrid(puzzle: number[][]): Grid {
   return puzzle.map((row) => row.map((value) => (value === 0 ? null : value)));
@@ -393,7 +396,9 @@ export default function SudokuGame({
     }
 
     const targetDifficulty = nextDifficulty ?? difficulty;
-    const nextSeed = findNextDistinctSeed(targetDifficulty, seed, puzzleGrid);
+    const nextSeed = nextDifficulty && nextDifficulty !== difficulty
+      ? DEFAULT_SEED
+      : findNextDistinctSeed(targetDifficulty, seed, puzzleGrid);
     if (nextDifficulty) setDifficulty(nextDifficulty);
     setSeed(nextSeed);
   };
@@ -408,7 +413,9 @@ export default function SudokuGame({
     setConfirmNewGameOpen(false);
     setPendingNewGameDifficulty(null);
     const targetDifficulty = nextDifficulty ?? difficulty;
-    const nextSeed = findNextDistinctSeed(targetDifficulty, seed, puzzleGrid);
+    const nextSeed = nextDifficulty && nextDifficulty !== difficulty
+      ? DEFAULT_SEED
+      : findNextDistinctSeed(targetDifficulty, seed, puzzleGrid);
     if (nextDifficulty) setDifficulty(nextDifficulty);
     setSeed(nextSeed);
   };

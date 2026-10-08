@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { parsePuzzleId } from '@/lib/sudoku';
+import { formatPuzzleId, parsePuzzleId } from '@/lib/sudoku';
 
 type GridLookupProps = {
   initialGrid: string | null;
@@ -13,8 +13,9 @@ export default function GridLookup({ initialGrid }: GridLookupProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const normalizedGrid = value.trim().toUpperCase();
-    if (!parsePuzzleId(normalizedGrid)) return;
-    window.location.assign(`/sudoku/${normalizedGrid}`);
+    const parsed = parsePuzzleId(normalizedGrid);
+    if (!parsed) return;
+    window.location.assign(`/sudoku/${formatPuzzleId(parsed.difficulty, parsed.seed)}`);
   };
 
   return (
@@ -28,7 +29,7 @@ export default function GridLookup({ initialGrid }: GridLookupProps) {
           type="text"
           inputMode="text"
           autoCapitalize="characters"
-          placeholder="M-1927"
+          placeholder="M-0001"
           value={value}
           onChange={(event) => setValue(event.target.value)}
           required

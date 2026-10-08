@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import SudokuGame from '@/components/SudokuGame';
-import { parsePuzzleId } from '@/lib/sudoku';
+import { formatPuzzleId, parsePuzzleId } from '@/lib/sudoku';
 
 type PuzzlePageProps = {
   params: Promise<{ puzzleId: string }>;
@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: PuzzlePageProps): Promise<Met
   const { puzzleId } = await params;
   const parsed = parsePuzzleId(puzzleId);
   if (!parsed) return { title: 'Sudoku — AkroLabs' };
-  return { title: `Sudoku #${puzzleId.toUpperCase()} — AkroLabs` };
+  return { title: `Sudoku #${formatPuzzleId(parsed.difficulty, parsed.seed)} — AkroLabs` };
 }
 
 export default async function PuzzlePage({ params }: PuzzlePageProps) {

@@ -26,6 +26,15 @@ npm run dev
 
 Sur Mac Apple Silicon, `node -p "process.arch"` doit renvoyer `arm64`.
 
+## Numérotation de production
+
+La numérotation publique est indépendante par difficulté et utilise quatre chiffres :
+`F-0001`, `M-0001`, `D-0001` et `X-0001`.
+
+Le développement local conserve par défaut la grille de travail `M-1927`. Pour
+le build de production, définir `NEXT_PUBLIC_SUDOKU_START_SEED=1` dans
+l'environnement de déploiement.
+
 ## État
 
 Dépôt initialisé avec une V1 locale fonctionnelle. Le schéma Supabase est préparé
