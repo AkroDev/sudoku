@@ -38,6 +38,7 @@ export function formatPuzzleId(difficulty: Difficulty, seed: number) {
 }
 
 const DIGITS = 9;
+const MAX_STORED_SEED = 2_000_000_000;
 
 function hashText(input: string) {
   let hash = 2166136261;
@@ -57,7 +58,7 @@ function hashCatalogSeed(difficulty: Difficulty, puzzleNumber: number, attempt: 
 }
 
 function getCatalogTechnicalSeed(difficulty: Difficulty, puzzleNumber: number) {
-  return hashText(`catalog-v1-seed:${difficulty}:${puzzleNumber}`);
+  return (hashText(`catalog-v1-seed:${difficulty}:${puzzleNumber}`) % MAX_STORED_SEED) + 1;
 }
 
 function createRandom(seed: number) {
