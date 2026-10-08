@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
+  createCatalogPuzzle,
   createPuzzle,
   DIFFICULTY_ORDER,
   DIFFICULTY_PROFILES,
@@ -39,6 +40,7 @@ const configuredDefaultSeed = Number(process.env.NEXT_PUBLIC_SUDOKU_START_SEED);
 const DEFAULT_SEED = Number.isSafeInteger(configuredDefaultSeed) && configuredDefaultSeed >= 0
   ? configuredDefaultSeed
   : 1927;
+const USE_PRODUCTION_CATALOG = process.env.NEXT_PUBLIC_SUDOKU_START_SEED === '1';
 
 function createInitialGrid(puzzle: number[][]): Grid {
   return puzzle.map((row) => row.map((value) => (value === 0 ? null : value)));
@@ -75,8 +77,13 @@ export default function SudokuGame({
   initialSeed = DEFAULT_SEED,
 }: SudokuGameProps) {
   const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
-  const [seed, setSeed] = useState(initialSeed);
-  const puzzle = useMemo(() => createPuzzle(difficulty, seed), [difficulty, seed]);
+  const [puzzleNumber, setPuzzleNumber] = useState(initialSeed);
+  const puzzle = useMemo(
+    () => USE_PRODUCTION_CATALOG
+      ? createCatalogPuzzle(difficulty, puzzleNumber)
+      : createPuzzle(difficulty, puzzleNumber),
+    [difficulty, puzzleNumber],
+  );
   const storageKey = `akrolabs-sudoku-${puzzle.id.toLowerCase()}`;
   const [grid, setGrid] = useState<Grid>(() => createInitialGrid(puzzle.grid));
   const [notes, setNotes] = useState<NotesGrid>(createEmptyNotes);
@@ -268,7 +275,7 @@ export default function SudokuGame({
         const nextCompletedRecord: CompletedGameRecord = {
           puzzleId,
           difficulty,
-          seed,
+          seed: puzzle.seed,
           rawTime: elapsedSeconds,
           penalties,
           finalTime: elapsedSeconds + penalties,
@@ -396,11 +403,13 @@ export default function SudokuGame({
     }
 
     const targetDifficulty = nextDifficulty ?? difficulty;
-    const nextSeed = nextDifficulty && nextDifficulty !== difficulty
+    const nextPuzzleNumber = nextDifficulty && nextDifficulty !== difficulty
       ? DEFAULT_SEED
-      : findNextDistinctSeed(targetDifficulty, seed, puzzleGrid);
+      : USE_PRODUCTION_CATALOG
+        ? puzzleNumber + 1
+        : findNextDistinctSeed(targetDifficulty, puzzleNumber, puzzleGrid);
     if (nextDifficulty) setDifficulty(nextDifficulty);
-    setSeed(nextSeed);
+    setPuzzleNumber(nextPuzzleNumber);
   };
 
   const cancelNewGame = () => {
@@ -413,11 +422,13 @@ export default function SudokuGame({
     setConfirmNewGameOpen(false);
     setPendingNewGameDifficulty(null);
     const targetDifficulty = nextDifficulty ?? difficulty;
-    const nextSeed = nextDifficulty && nextDifficulty !== difficulty
+    const nextPuzzleNumber = nextDifficulty && nextDifficulty !== difficulty
       ? DEFAULT_SEED
-      : findNextDistinctSeed(targetDifficulty, seed, puzzleGrid);
+      : USE_PRODUCTION_CATALOG
+        ? puzzleNumber + 1
+        : findNextDistinctSeed(targetDifficulty, puzzleNumber, puzzleGrid);
     if (nextDifficulty) setDifficulty(nextDifficulty);
-    setSeed(nextSeed);
+    setPuzzleNumber(nextPuzzleNumber);
   };
 
   const resetGame = () => requestNewGame();

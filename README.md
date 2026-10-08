@@ -33,7 +33,9 @@ La numérotation publique est indépendante par difficulté et utilise quatre ch
 
 Le développement local conserve par défaut la grille de travail `M-1927`. Pour
 le build de production, définir `NEXT_PUBLIC_SUDOKU_START_SEED=1` dans
-l'environnement de déploiement.
+l'environnement de déploiement. Cette valeur active aussi le catalogue de
+production : le numéro public avance sans trous, tandis que la graine technique
+reste interne à la génération.
 
 ## État
 

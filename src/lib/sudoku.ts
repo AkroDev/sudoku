@@ -39,14 +39,25 @@ export function formatPuzzleId(difficulty: Difficulty, seed: number) {
 
 const DIGITS = 9;
 
-function hashSeed(difficulty: Difficulty, seed: number) {
+function hashText(input: string) {
   let hash = 2166136261;
-  const input = `${difficulty}:${Math.trunc(seed)}`;
   for (let index = 0; index < input.length; index += 1) {
     hash ^= input.charCodeAt(index);
     hash = Math.imul(hash, 16777619);
   }
   return hash >>> 0;
+}
+
+function hashSeed(difficulty: Difficulty, seed: number) {
+  return hashText(`${difficulty}:${Math.trunc(seed)}`);
+}
+
+function hashCatalogSeed(difficulty: Difficulty, puzzleNumber: number, attempt: number) {
+  return hashText(`catalog-v1:${difficulty}:${puzzleNumber}:${attempt}`);
+}
+
+function getCatalogTechnicalSeed(difficulty: Difficulty, puzzleNumber: number) {
+  return hashText(`catalog-v1-seed:${difficulty}:${puzzleNumber}`);
 }
 
 function createRandom(seed: number) {
@@ -191,17 +202,23 @@ function matchesProfile(difficulty: Difficulty, analysis: PuzzleAnalysis) {
   return !analysis.solvedLogically && analysis.searchDepth >= 40;
 }
 
-export function createPuzzle(difficulty: Difficulty, seed: number): GeneratedPuzzle {
+type PuzzleCandidate = {
+  grid: SudokuGrid;
+  solution: SudokuGrid;
+  analysis: PuzzleAnalysis;
+};
+
+function generatePuzzle(
+  difficulty: Difficulty,
+  puzzleNumber: number,
+  technicalSeed: number,
+  createAttemptRandom: (attempt: number) => () => number,
+) {
   const profile = DIFFICULTY_PROFILES[difficulty];
-  const normalizedSeed = Math.abs(Math.trunc(seed));
-  let bestCandidate: {
-    grid: SudokuGrid;
-    solution: SudokuGrid;
-    analysis: PuzzleAnalysis;
-  } | null = null;
+  let bestCandidate: PuzzleCandidate | null = null;
 
   for (let attempt = 0; attempt < profile.maxAttempts; attempt += 1) {
-    const random = createRandom(hashSeed(difficulty, normalizedSeed + attempt));
+    const random = createAttemptRandom(attempt);
     const solution = createSolvedGrid(random);
     const grid = createPuzzleGrid(solution, profile.targetClues, random);
     const analysis = analyzePuzzle(grid);
@@ -219,16 +236,36 @@ export function createPuzzle(difficulty: Difficulty, seed: number): GeneratedPuz
   if (!bestCandidate) throw new Error(`Unable to generate a ${difficulty} Sudoku puzzle`);
 
   return {
-    id: formatPuzzleId(difficulty, normalizedSeed),
+    id: formatPuzzleId(difficulty, puzzleNumber),
     difficulty,
     label: profile.label,
-    seed: normalizedSeed,
+    seed: technicalSeed,
     grid: bestCandidate.grid,
     solution: bestCandidate.solution,
     profile,
     analysis: bestCandidate.analysis,
     matchedProfile: matchesProfile(difficulty, bestCandidate.analysis),
   };
+}
+
+export function createPuzzle(difficulty: Difficulty, seed: number): GeneratedPuzzle {
+  const normalizedSeed = Math.abs(Math.trunc(seed));
+  return generatePuzzle(
+    difficulty,
+    normalizedSeed,
+    normalizedSeed,
+    (attempt) => createRandom(hashSeed(difficulty, normalizedSeed + attempt)),
+  );
+}
+
+export function createCatalogPuzzle(difficulty: Difficulty, puzzleNumber: number): GeneratedPuzzle {
+  const normalizedNumber = Math.max(0, Math.trunc(puzzleNumber));
+  return generatePuzzle(
+    difficulty,
+    normalizedNumber,
+    getCatalogTechnicalSeed(difficulty, normalizedNumber),
+    (attempt) => createRandom(hashCatalogSeed(difficulty, normalizedNumber, attempt)),
+  );
 }
 
 function gridSignature(grid: SudokuGrid) {
