@@ -69,6 +69,16 @@ export default function GameDialogs({
       {showOptionsIntro && (
         <div className="modal-backdrop intro-backdrop">
           <section className="panel dialog-panel intro-dialog" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+            <div className="intro-visual" aria-hidden="true">
+              <div className="intro-mini-grid">
+                <span /><span className="intro-cell--orange" /><span />
+                <span className="intro-cell--violet" /><span className="intro-cell--glow" /><span />
+                <span /><span /><span className="intro-cell--orange" />
+              </div>
+              <span className="intro-visual-mark">✦</span>
+              <span className="intro-orbit intro-orbit--one" />
+              <span className="intro-orbit intro-orbit--two" />
+            </div>
             <p className="eyebrow">AkroLabs · Sudoku</p>
             <h2 id="intro-title">Bienvenue dans le Sudoku AkroLabs</h2>
             <p className="dialog-copy">Faites travailler vos neurones à votre rythme. Difficulté, aides et statistiques se cachent sous la roue dentée.</p>
@@ -76,7 +86,7 @@ export default function GameDialogs({
               <input type="checkbox" checked={introDontShowAgain} onChange={(event) => onIntroDontShowAgainChange(event.target.checked)} />
               <span>J’ai compris, on peut cacher cette fenêtre.</span>
             </label>
-            <button className="action-button action-button--primary" type="button" onClick={onCloseOptionsIntro}>
+            <button className="action-button action-button--primary intro-cta" type="button" onClick={onCloseOptionsIntro}>
               C’est parti
             </button>
           </section>

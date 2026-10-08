@@ -88,6 +88,7 @@ export default function SudokuGame({
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showOptionsIntro, setShowOptionsIntro] = useState(false);
+  const [introReady, setIntroReady] = useState(false);
   const [introDontShowAgain, setIntroDontShowAgain] = useState(false);
   const [confirmNewGameOpen, setConfirmNewGameOpen] = useState(false);
   const [confirmRestartOpen, setConfirmRestartOpen] = useState(false);
@@ -188,9 +189,9 @@ export default function SudokuGame({
   useEffect(() => subscribeToSupabaseSession(setSession), []);
 
   useClientLayoutEffect(() => {
-    if (window.localStorage.getItem('akrolabs-sudoku-options-intro-v1') !== 'true') {
-      setShowOptionsIntro(true);
-    }
+    const introWasDismissed = window.localStorage.getItem('akrolabs-sudoku-options-intro-v1') === 'true';
+    setShowOptionsIntro(!introWasDismissed);
+    setIntroReady(true);
   }, []);
 
   useEffect(() => {
@@ -362,7 +363,7 @@ export default function SudokuGame({
     : null;
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell${introReady ? '' : ' app-shell--intro-pending'}`}>
       <header className="topbar">
         <a className="brand-link" href="https://akrolabs.fr/fr/labs">
           <div className="brand">
