@@ -1676,15 +1676,18 @@ button {
 .intro-dialog .eyebrow {
   color: #d5baff;
   font-size: 10px;
+  text-align: center;
 }
 
 .intro-dialog h2 {
-  max-width: 390px;
+  max-width: 400px;
+  justify-self: center;
   margin: -5px 0 0;
   color: var(--text);
   font-size: clamp(28px, 6vw, 38px);
   letter-spacing: -0.055em;
   line-height: 1.02;
+  text-align: center;
 }
 
 .intro-dialog .dialog-copy {
