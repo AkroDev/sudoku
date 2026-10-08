@@ -70,8 +70,8 @@ export default function GameDialogs({
         <div className="modal-backdrop intro-backdrop">
           <section className="panel dialog-panel intro-dialog" role="dialog" aria-modal="true" aria-labelledby="intro-title">
             <p className="eyebrow">AkroLabs · Sudoku</p>
-            <h2 id="intro-title">La roue dentée cache quelques astuces</h2>
-            <p className="dialog-copy">Difficulté, options, statistiques et connexion sont regroupées ici.</p>
+            <h2 id="intro-title">Bienvenue dans le Sudoku AkroLabs</h2>
+            <p className="dialog-copy">Faites travailler vos neurones à votre rythme. Difficulté, aides et statistiques se cachent sous la roue dentée.</p>
             <label className="checkbox-row">
               <input type="checkbox" checked={introDontShowAgain} onChange={(event) => onIntroDontShowAgainChange(event.target.checked)} />
               <span>J’ai compris, on peut cacher cette fenêtre.</span>

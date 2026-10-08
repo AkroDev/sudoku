@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
   createCatalogPuzzle,
@@ -37,6 +37,7 @@ const DEFAULT_SEED = Number.isSafeInteger(configuredDefaultSeed) && configuredDe
   ? configuredDefaultSeed
   : 1927;
 const USE_PRODUCTION_CATALOG = process.env.NEXT_PUBLIC_SUDOKU_START_SEED === '1';
+const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 function createInitialGrid(puzzle: number[][]): Grid {
   return puzzle.map((row) => row.map((value) => (value === 0 ? null : value)));
@@ -186,7 +187,7 @@ export default function SudokuGame({
 
   useEffect(() => subscribeToSupabaseSession(setSession), []);
 
-  useEffect(() => {
+  useClientLayoutEffect(() => {
     if (window.localStorage.getItem('akrolabs-sudoku-options-intro-v1') !== 'true') {
       setShowOptionsIntro(true);
     }
