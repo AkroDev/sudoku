@@ -27,6 +27,7 @@ import {
   submitPublicScore,
 } from '@/lib/public-score';
 import { formatTime } from '@/lib/time';
+import { buildSharePagePath, getShareText, type ShareDetails } from '@/lib/share';
 import RankingRow from '@/components/RankingRow';
 import BitcoinPrice from '@/components/BitcoinPrice';
 
@@ -118,6 +119,8 @@ export default function SudokuGame({
   const [completedRecord, setCompletedRecord] = useState<CompletedGameRecord | null>(null);
   const [publicScoreBusy, setPublicScoreBusy] = useState(false);
   const [publicScoreSubmitted, setPublicScoreSubmitted] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const [replayNoticeOpen, setReplayNoticeOpen] = useState(false);
   const completionRecorded = useRef(false);
   const lastPersistedStorageKey = useRef<string | null>(null);
@@ -193,6 +196,8 @@ export default function SudokuGame({
     setCorrectCell(null);
     setCompletedRecord(null);
     setPublicScoreSubmitted(false);
+    setShareCopied(false);
+    setShareBusy(false);
     setReplayNoticeOpen(false);
     completionRecorded.current = false;
 
@@ -488,6 +493,46 @@ export default function SudokuGame({
       setHallOfFame(entries);
     }
     setPublicScoreBusy(false);
+  };
+
+  const handleShare = async () => {
+    const shareDetails: ShareDetails = {
+      puzzleId,
+      elapsedSeconds: completedRecord?.finalTime ?? elapsedSeconds + penalties,
+      difficulty,
+      notesUsed: completedRecord?.notesUsed ?? notesUsed,
+      highlightSame: completedRecord?.highlightSame ?? highlightSame,
+      checkErrors: completedRecord?.checkErrors ?? checkErrors,
+    };
+    const shareText = getShareText(shareDetails);
+    const shareUrl = new URL(buildSharePagePath(shareDetails), window.location.origin).toString();
+    setShareBusy(true);
+    setShareCopied(false);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Sudoku #${puzzleId}`,
+          text: shareText,
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        setShareCopied(true);
+        window.setTimeout(() => setShareCopied(false), 2400);
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        setShareCopied(true);
+        window.setTimeout(() => setShareCopied(false), 2400);
+      } catch {
+        setShareCopied(false);
+      }
+    } finally {
+      setShareBusy(false);
+    }
   };
 
   const closeOptionsIntro = () => {
@@ -901,6 +946,9 @@ export default function SudokuGame({
                 Hall of Fame ↗
               </a>
             )}
+            <button className="action-button action-button--primary completion-share-button" type="button" onClick={() => void handleShare()} disabled={shareBusy}>
+              {shareCopied ? 'Lien copié !' : 'Partager ma victoire'}
+            </button>
             <button className="action-button completion-new-game" type="button" onClick={resetGame}>
               Nouvelle grille
             </button>

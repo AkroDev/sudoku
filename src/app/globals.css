@@ -1285,6 +1285,11 @@ button {
   text-decoration: none;
 }
 
+.completion-share-button {
+  width: 100%;
+  margin-top: -4px;
+}
+
 .completion-new-game {
   justify-self: center;
 }
