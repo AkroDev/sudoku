@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { formatPuzzleId, parsePuzzleId } from '@/lib/sudoku';
 import HallOfFameView from '@/components/HallOfFameView';
-import BitcoinPrice from '@/components/BitcoinPrice';
+import AppHeader from '@/components/AppHeader';
 
 type HallOfFamePageProps = {
   searchParams: Promise<{ grid?: string | string[]; from?: string | string[] }>;
@@ -22,27 +22,7 @@ export default async function HallOfFamePage({ searchParams }: HallOfFamePagePro
 
   return (
     <main className="app-shell hall-of-fame-page">
-      <header className="topbar">
-        <a className="brand-link" href="https://akrolabs.fr/fr/labs">
-          <div className="brand">
-            <span className="brand-mark" aria-hidden="true">✦</span>
-            <div>
-              <p className="brand-name">AkroLabs</p>
-              <p className="brand-subtitle">Sudoku</p>
-            </div>
-          </div>
-        </a>
-        <BitcoinPrice />
-        <div className="topbar-page-info">
-          <div className="topbar-meta">
-            <span>HALL OF FAME</span>
-            {grid && <a className="grid-return-link" href={`/sudoku/${grid}`}>#{grid}</a>}
-            {!grid && returnGrid && <a className="grid-return-link" href={`/sudoku/${returnGrid}`}>↩ #{returnGrid}</a>}
-            {grid && <a className="grid-return-link" href={`/sudoku/hall-of-fame?from=${grid}`}>Toutes les grilles</a>}
-          </div>
-        </div>
-      </header>
-
+      <AppHeader page="hall-of-fame" grid={grid} returnGrid={returnGrid} />
       <HallOfFameView grid={grid} returnGrid={returnGrid} />
     </main>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import { useLocaleText } from '@/i18n';
 
 const KRAKEN_TICKER_URL = 'https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR%2CXXBTZUSD';
 const REFRESH_INTERVAL_MS = 60_000;
@@ -29,10 +30,10 @@ function parseLastPrice(pair: TickerPair | undefined) {
   return Number.isFinite(value) ? value : null;
 }
 
-function formatPrice(value: number | null, currency: 'EUR' | 'USD') {
+function formatPrice(value: number | null, currency: 'EUR' | 'USD', locale: 'fr' | 'en') {
   if (value === null) return '—';
 
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
     style: 'currency',
     currency,
     currencyDisplay: 'narrowSymbol',
@@ -41,6 +42,7 @@ function formatPrice(value: number | null, currency: 'EUR' | 'USD') {
 }
 
 export default function BitcoinPrice() {
+  const { locale, t } = useLocaleText();
   const [prices, setPrices] = useState<BitcoinPrices>({ eur: null, usd: null });
   const [supportOpen, setSupportOpen] = useState(false);
   const [qrSvg, setQrSvg] = useState('');
@@ -135,14 +137,14 @@ export default function BitcoinPrice() {
 
   return (
     <div className="bitcoin-widget">
-      <div className="bitcoin-price" aria-label="Cours du Bitcoin" aria-live="polite">
+      <div className="bitcoin-price" aria-label={t('Cours du Bitcoin')} aria-live="polite">
         <span className="bitcoin-price-item">
           <span className="bitcoin-price-label">BTC/EUR</span>
-          <strong>{formatPrice(prices.eur, 'EUR')}</strong>
+          <strong>{formatPrice(prices.eur, 'EUR', locale)}</strong>
         </span>
         <span className="bitcoin-price-item">
           <span className="bitcoin-price-label">BTC/USD</span>
-          <strong>{formatPrice(prices.usd, 'USD')}</strong>
+          <strong>{formatPrice(prices.usd, 'USD', locale)}</strong>
         </span>
       </div>
       <button
@@ -152,16 +154,16 @@ export default function BitcoinPrice() {
         aria-controls="bitcoin-support-panel"
         onClick={() => setSupportOpen((current) => !current)}
       >
-        <span aria-hidden="true">⚡</span> Soutenir mes projets open-source
+        <span aria-hidden="true">⚡</span> {t('Soutenir mes projets open-source')}
       </button>
       {supportOpen && (
-        <div className="bitcoin-support-panel" id="bitcoin-support-panel" role="dialog" aria-label="Soutenir mes projets open-source">
+        <div className="bitcoin-support-panel" id="bitcoin-support-panel" role="dialog" aria-label={t('Soutenir mes projets open-source')}>
           <div className="support-panel-header">
-            <strong>Soutenir mes projets open-source</strong>
+            <strong>{t('Soutenir mes projets open-source')}</strong>
             <button
               className="support-close-button"
               type="button"
-              aria-label="Fermer"
+              aria-label={t('Fermer')}
               onClick={() => setSupportOpen(false)}
             >
               ×
@@ -169,17 +171,17 @@ export default function BitcoinPrice() {
           </div>
 
           <a className="support-github-link" href={GITHUB_URL} target="_blank" rel="noreferrer">
-            <span>Voir mes projets GitHub</span>
+            <span>{t('Voir mes projets GitHub')}</span>
             <span aria-hidden="true">↗</span>
           </a>
 
           <section className="support-method" aria-labelledby="bitcoin-onchain-title">
             <div className="support-method-heading">
-              <strong id="bitcoin-onchain-title">Bitcoin on-chain</strong>
+              <strong id="bitcoin-onchain-title">{t('Bitcoin on-chain')}</strong>
               <span className="support-method-tag">QR</span>
             </div>
             <div className="support-onchain-content">
-              <div className="bitcoin-qr" role="img" aria-label="QR code Bitcoin on-chain">
+              <div className="bitcoin-qr" role="img" aria-label={t('QR code Bitcoin on-chain')}>
                 {qrSvg ? (
                   <span dangerouslySetInnerHTML={{ __html: qrSvg }} />
                 ) : (
@@ -189,24 +191,24 @@ export default function BitcoinPrice() {
               <div className="support-address-content">
                 <code className="support-address">{ONCHAIN_ADDRESS}</code>
                 <button className="support-copy-button" type="button" onClick={copyOnchainAddress}>
-                  {addressCopied ? 'Adresse copiée' : 'Copier l’adresse'}
+                  {addressCopied ? t('Adresse copiée') : t('Copier l’adresse')}
                 </button>
               </div>
             </div>
           </section>
 
-          <section className="support-method support-method--lightning" aria-label="Adresse Lightning">
+          <section className="support-method support-method--lightning" aria-label={t('Adresse Lightning')}>
             <div className="support-method-heading">
               <strong>Lightning</strong>
-              <span className="support-method-tag">À venir</span>
+              <span className="support-method-tag">{t('À venir')}</span>
             </div>
             <div className="support-lightning-address">
               <code className="support-address">{LIGHTNING_ADDRESS}</code>
               <button className="support-copy-button" type="button" onClick={copyLightningAddress}>
-                {lightningAddressCopied ? 'Adresse copiée' : 'Copier l’adresse'}
+                {lightningAddressCopied ? t('Adresse copiée') : t('Copier l’adresse')}
               </button>
             </div>
-            <p className="support-lightning-note">QR Lightning bientôt disponible.</p>
+            <p className="support-lightning-note">{t('QR Lightning bientôt disponible.')}</p>
           </section>
         </div>
       )}

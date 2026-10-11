@@ -6,6 +6,7 @@ import {
   createCatalogPuzzle,
   createPuzzle,
   findNextDistinctSeed,
+  parsePuzzleId,
   type Difficulty,
 } from '@/lib/sudoku';
 import {
@@ -30,6 +31,8 @@ import { usePublicScoreSubmission } from '@/components/sudoku/usePublicScoreSubm
 import { useSudokuGameplay } from '@/components/sudoku/useSudokuGameplay';
 import { useGameCompletion } from '@/components/sudoku/useGameCompletion';
 import { useGameSharing } from '@/components/sudoku/useGameSharing';
+import LocaleSwitch from '@/components/LocaleSwitch';
+import { localizedPath, useLocaleText } from '@/i18n';
 
 const DEFAULT_DIFFICULTY: Difficulty = 'medium';
 const configuredDefaultSeed = Number(process.env.NEXT_PUBLIC_SUDOKU_START_SEED);
@@ -37,6 +40,7 @@ const DEFAULT_SEED = Number.isSafeInteger(configuredDefaultSeed) && configuredDe
   ? configuredDefaultSeed
   : 1927;
 const USE_PRODUCTION_CATALOG = process.env.NEXT_PUBLIC_SUDOKU_START_SEED === '1';
+const LAST_PUZZLE_STORAGE_KEY = 'akrolabs-sudoku-last-puzzle-v1';
 const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 function createInitialGrid(puzzle: number[][]): Grid {
@@ -49,12 +53,15 @@ function createEmptyNotes(): NotesGrid {
 type SudokuGameProps = {
   initialDifficulty?: Difficulty;
   initialSeed?: number;
+  resumeLastPuzzle?: boolean;
 };
 
 export default function SudokuGame({
   initialDifficulty = DEFAULT_DIFFICULTY,
   initialSeed = DEFAULT_SEED,
+  resumeLastPuzzle = false,
 }: SudokuGameProps) {
+  const { locale, t } = useLocaleText();
   const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
   const [puzzleNumber, setPuzzleNumber] = useState(initialSeed);
   const puzzle = useMemo(
@@ -81,6 +88,7 @@ export default function SudokuGame({
   const [checkErrors, setCheckErrors] = useState(true);
   const [errorCell, setErrorCell] = useState<number | null>(null);
   const [correctCell, setCorrectCell] = useState<number | null>(null);
+  const [penaltyNoticeId, setPenaltyNoticeId] = useState(0);
   const [statistics, setStatistics] = useState<PersonalStatistics>(() => createEmptyStatistics());
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
@@ -89,6 +97,7 @@ export default function SudokuGame({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showOptionsIntro, setShowOptionsIntro] = useState(false);
   const [introReady, setIntroReady] = useState(false);
+  const [resumeResolved, setResumeResolved] = useState(!resumeLastPuzzle);
   const [introDontShowAgain, setIntroDontShowAgain] = useState(false);
   const [confirmNewGameOpen, setConfirmNewGameOpen] = useState(false);
   const [confirmRestartOpen, setConfirmRestartOpen] = useState(false);
@@ -98,12 +107,12 @@ export default function SudokuGame({
   const [publicScoreSubmitted, setPublicScoreSubmitted] = useState(false);
   const [replayNoticeOpen, setReplayNoticeOpen] = useState(false);
   const { nickname, setNickname, busy: publicScoreBusy, submitScore } = usePublicScoreSubmission();
-  const { busy: shareBusy, copied: shareCopied, share } = useGameSharing(puzzle.id);
+  const { busy: shareBusy, copied: shareCopied, share } = useGameSharing(puzzle.id, locale);
 
   const puzzleId = puzzle.id;
   const puzzleGrid = puzzle.grid;
   const solution = puzzle.solution;
-  const difficultyLabel = puzzle.label;
+  const difficultyLabel = t(puzzle.label);
 
   const { completeGame, markHydrated, resetCompletion } = useGameCompletion({
     puzzleId,
@@ -171,10 +180,15 @@ export default function SudokuGame({
   });
 
   useEffect(() => {
-    if (window.location.pathname.startsWith('/sudoku/')) {
-      window.history.replaceState(null, '', `/sudoku/${puzzleId}`);
+    if (!resumeResolved) return;
+    window.localStorage.setItem(LAST_PUZZLE_STORAGE_KEY, puzzleId);
+  }, [puzzleId, resumeResolved]);
+
+  useEffect(() => {
+    if (window.location.pathname.startsWith('/sudoku/') || window.location.pathname.startsWith('/en/sudoku/')) {
+      window.history.replaceState(null, '', `${localizedPath(`/sudoku/${puzzleId}`, locale)}`);
     }
-  }, [puzzleId]);
+  }, [puzzleId, resumeResolved, locale]);
 
   const selectedRow = selectedCell === null ? null : Math.floor(selectedCell / 9);
   const selectedColumn = selectedCell === null ? null : selectedCell % 9;
@@ -189,10 +203,20 @@ export default function SudokuGame({
   useEffect(() => subscribeToSupabaseSession(setSession), []);
 
   useClientLayoutEffect(() => {
+    if (resumeLastPuzzle) {
+      const lastPuzzleId = window.localStorage.getItem(LAST_PUZZLE_STORAGE_KEY);
+      const lastPuzzle = lastPuzzleId ? parsePuzzleId(lastPuzzleId) : null;
+      if (lastPuzzle) {
+        setDifficulty(lastPuzzle.difficulty);
+        setPuzzleNumber(lastPuzzle.seed);
+      }
+    }
+
     const introWasDismissed = window.localStorage.getItem('akrolabs-sudoku-options-intro-v1') === 'true';
     setShowOptionsIntro(!introWasDismissed);
+    setResumeResolved(true);
     setIntroReady(true);
-  }, []);
+  }, [resumeLastPuzzle]);
 
   useEffect(() => {
     if (!settingsOpen) return;
@@ -216,6 +240,16 @@ export default function SudokuGame({
 
   useGameTimer(started, paused, completed, setElapsedSeconds);
 
+  useEffect(() => {
+    if (penaltyNoticeId === 0) return;
+    const timeout = window.setTimeout(() => setPenaltyNoticeId(0), 1800);
+    return () => window.clearTimeout(timeout);
+  }, [penaltyNoticeId]);
+
+  useEffect(() => {
+    setPenaltyNoticeId(0);
+  }, [puzzleId]);
+
   const { enterValue, clearValue, toggleNotesMode, toggleNotesEnabled, moveSelection } = useSudokuGameplay({
     grid,
     puzzleGrid,
@@ -238,6 +272,7 @@ export default function SudokuGame({
     setPenalties,
     setErrorCell,
     setCorrectCell,
+    onPenalty: () => setPenaltyNoticeId((current) => current + 1),
     onComplete: completeGame,
   });
 
@@ -365,12 +400,14 @@ export default function SudokuGame({
   return (
     <main className={`app-shell${introReady ? '' : ' app-shell--intro-pending'}`}>
       <header className="topbar">
-        <a className="brand-link" href="https://akrolabs.fr/fr/labs">
+        <a className="brand-link" href={locale === 'en' ? 'https://akrolabs.fr/en/labs' : 'https://akrolabs.fr/fr/labs'}>
           <div className="brand">
-            <span className="brand-mark" aria-hidden="true">✦</span>
+            <span className="brand-mark" aria-hidden="true">
+              <img src="/logo-akrolabs.svg" alt="" />
+            </span>
             <div>
               <p className="brand-name">AkroLabs</p>
-              <p className="brand-subtitle">Sudoku</p>
+              <p className="brand-subtitle">{t('Sudoku')}</p>
             </div>
           </div>
         </a>
@@ -378,22 +415,23 @@ export default function SudokuGame({
         <div className="topbar-tools">
           <div className="topbar-info">
             <div className="topbar-meta">
-              <span>GRILLE</span>
+              <span>{t('GRILLE')}</span>
               <strong>#{puzzleId}</strong>
               <span className="meta-dot">•</span>
               <span>{difficultyLabel}</span>
             </div>
-            <div className="topbar-options" aria-label="Options actives">
-              {notesEnabled && <span className="topbar-option">Notes</span>}
-              {highlightSame && <span className="topbar-option">Surbrillance</span>}
-              {checkErrors && <span className="topbar-option">Vérification</span>}
+            <div className="topbar-options" aria-label={t('Options actives')}>
+              {notesEnabled && <span className="topbar-option">{t('Notes')}</span>}
+              {highlightSame && <span className="topbar-option">{t('Surbrillance')}</span>}
+              {checkErrors && <span className="topbar-option">{t('Vérification')}</span>}
             </div>
           </div>
+          <LocaleSwitch />
           <button
             className="settings-button"
             type="button"
-            aria-label="Options"
-            title="Options"
+            aria-label={t('Options')}
+            title={t('Options')}
             aria-expanded={settingsOpen}
             onClick={() => setSettingsOpen((current) => !current)}
           >
@@ -412,18 +450,21 @@ export default function SudokuGame({
           onNewGame={resetGame}
           started={started}
           onRestart={requestRestartCurrentPuzzle}
-          elapsedSeconds={elapsedSeconds}
+          elapsedSeconds={elapsedSeconds + penalties}
           paused={paused}
           grid={grid}
           puzzleGrid={puzzleGrid}
+          solutionGrid={solution}
           selectedCell={selectedCell}
           selectedRow={selectedRow}
           selectedColumn={selectedColumn}
           highlightSame={highlightSame}
+          checkErrors={checkErrors}
           activeNumber={activeNumber}
           errorCell={errorCell}
           correctCell={correctCell}
           notes={notes}
+          penaltyNoticeId={penaltyNoticeId}
           onSelectCell={(index, isGiven) => {
             if (!paused && !completed) {
               setSelectedCell(index);
@@ -508,7 +549,7 @@ export default function SudokuGame({
         />
       )}
 
-      <p className="footer-line">AkroLabs · Sudoku</p>
+      <p className="footer-line">AkroLabs · {t('Sudoku')}</p>
     </main>
   );
 }

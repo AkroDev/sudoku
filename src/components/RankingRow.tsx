@@ -1,6 +1,9 @@
+'use client';
+
 import { DIFFICULTY_PROFILES } from '@/lib/sudoku';
 import type { HallOfFameEntry } from '@/lib/hall-of-fame';
 import { formatTime } from '@/lib/time';
+import { useLocaleText } from '@/i18n';
 
 type RankingRowProps = {
   entry: HallOfFameEntry;
@@ -9,19 +12,22 @@ type RankingRowProps = {
 };
 
 export default function RankingRow({ entry, index, showPuzzleId = false }: RankingRowProps) {
-  const errorLabel = `${entry.errors} ${entry.errors === 1 ? 'erreur' : 'erreurs'}`;
-  const errorShortLabel = `${entry.errors} err.`;
-  const difficultyLabel = DIFFICULTY_PROFILES[entry.difficulty].label;
+  const { t } = useLocaleText();
+  const errorLabel = entry.errors === 1
+    ? t('{{count}} erreur', { count: entry.errors })
+    : t('{{count}} erreurs', { count: entry.errors });
+  const errorShortLabel = t('{{count}} err.', { count: entry.errors });
+  const difficultyLabel = t(DIFFICULTY_PROFILES[entry.difficulty].label);
   const tags = [
-    { label: difficultyLabel, shortLabel: DIFFICULTY_PROFILES[entry.difficulty].code, title: `Difficulté : ${difficultyLabel}` },
+    { label: difficultyLabel, shortLabel: DIFFICULTY_PROFILES[entry.difficulty].code, title: t('Difficulté : {{difficulty}}', { difficulty: difficultyLabel }) },
     { label: errorLabel, shortLabel: errorShortLabel, title: errorLabel },
-    entry.notesUsed ? { label: 'Notes', shortLabel: 'N', title: 'Notes utilisées' } : null,
-    entry.highlightSame ? { label: 'Surbrillance', shortLabel: 'S', title: 'Surbrillance active' } : null,
-    entry.checkErrors ? { label: 'Vérification', shortLabel: '✓', title: 'Vérification des erreurs active' } : null,
+    entry.notesUsed ? { label: t('Notes'), shortLabel: 'N', title: t('Notes utilisées') } : null,
+    entry.highlightSame ? { label: t('Surbrillance'), shortLabel: 'S', title: t('Surbrillance active') } : null,
+    entry.checkErrors ? { label: t('Vérification'), shortLabel: '✓', title: t('Vérification des erreurs active') } : null,
   ].filter((tag): tag is NonNullable<typeof tag> => tag !== null);
 
   return (
-    <li className={`ranking-row${showPuzzleId ? ' ranking-row--global' : ''}`} aria-label={`Place ${index + 1}, ${entry.nickname}, ${errorLabel}${showPuzzleId ? `, grille ${entry.puzzleId}` : ''}`}>
+    <li className={`ranking-row${showPuzzleId ? ' ranking-row--global' : ''}`} aria-label={t('Place {{place}}, {{nickname}}, {{errors}}{{grid}}', { place: index + 1, nickname: entry.nickname, errors: errorLabel, grid: showPuzzleId ? `, ${t('Grille')} ${entry.puzzleId}` : '' })}>
       <span className="ranking-rank">#{index + 1}</span>
       {showPuzzleId && <span className="ranking-grid-id">#{entry.puzzleId}</span>}
       <span className="ranking-score">

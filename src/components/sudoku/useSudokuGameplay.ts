@@ -25,6 +25,7 @@ type UseSudokuGameplayOptions = {
   setPenalties: Dispatch<SetStateAction<number>>;
   setErrorCell: Dispatch<SetStateAction<number | null>>;
   setCorrectCell: Dispatch<SetStateAction<number | null>>;
+  onPenalty: () => void;
   onComplete: (nextGrid: Grid) => void;
 };
 
@@ -50,6 +51,7 @@ export function useSudokuGameplay({
   setPenalties,
   setErrorCell,
   setCorrectCell,
+  onPenalty,
   onComplete,
 }: UseSudokuGameplayOptions) {
   const enterValue = (value: number) => {
@@ -72,12 +74,19 @@ export function useSudokuGameplay({
       return;
     }
 
-    if (checkErrors && value !== solution[row][column]) {
+    const isIncorrect = value !== solution[row][column];
+
+    if (checkErrors && isIncorrect) {
       setErrorCell(selectedCell);
       setErrors((current) => current + 1);
       setPenalties((current) => current + ERROR_PENALTY_SECONDS);
+      onPenalty();
       window.setTimeout(() => setErrorCell(null), 1000);
-      return;
+      setCorrectCell(null);
+    } else {
+      setErrorCell(null);
+      setCorrectCell(selectedCell);
+      window.setTimeout(() => setCorrectCell(null), 480);
     }
 
     const nextGrid = grid.map((gridRow) => [...gridRow]);
@@ -86,8 +95,6 @@ export function useSudokuGameplay({
     setNotes((current) => current.map((notesRow, rowIndex) => notesRow.map((cellNotes, columnIndex) => (
       rowIndex === row && columnIndex === column ? [] : cellNotes
     ))));
-    setCorrectCell(selectedCell);
-    window.setTimeout(() => setCorrectCell(null), 480);
     onComplete(nextGrid);
   };
 

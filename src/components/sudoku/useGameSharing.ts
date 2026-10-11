@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { buildSharePagePath, getShareText, type ShareDetails } from '@/lib/share';
+import type { Locale } from '@/i18n';
 
-export function useGameSharing(puzzleId: string) {
+export function useGameSharing(puzzleId: string, locale: Locale) {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -11,8 +12,9 @@ export function useGameSharing(puzzleId: string) {
   }, [puzzleId]);
 
   const share = async (details: ShareDetails) => {
-    const shareText = getShareText(details);
-    const shareUrl = new URL(buildSharePagePath(details), window.location.origin).toString();
+    const localizedDetails = { ...details, locale };
+    const shareText = getShareText(localizedDetails, locale);
+    const shareUrl = new URL(buildSharePagePath(localizedDetails, locale), window.location.origin).toString();
     const clipboardText = `${shareText}\n${shareUrl}`;
     setBusy(true);
     setCopied(false);

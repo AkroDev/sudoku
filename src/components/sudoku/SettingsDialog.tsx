@@ -1,6 +1,9 @@
+'use client';
+
 import type { FormEventHandler } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { DIFFICULTY_ORDER, DIFFICULTY_PROFILES, type Difficulty } from '@/lib/sudoku';
+import { useLocaleText } from '@/i18n';
 
 type SettingsDialogProps = {
   onClose: () => void;
@@ -39,6 +42,7 @@ export default function SettingsDialog({
   authBusy,
   magicLinkSent,
 }: SettingsDialogProps) {
+  const { t } = useLocaleText();
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
@@ -46,32 +50,32 @@ export default function SettingsDialog({
       <section className="panel dialog-panel settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <div className="dialog-heading">
           <div>
-            <p className="eyebrow">Options</p>
-            <h2 id="settings-title">Options</h2>
+            <p className="eyebrow">{t('Options')}</p>
+            <h2 id="settings-title">{t('Options')}</h2>
           </div>
-          <button className="settings-button" type="button" aria-label="Options" title="Options" onClick={onClose}>
+          <button className="settings-button" type="button" aria-label={t('Options')} title={t('Options')} onClick={onClose}>
             <span aria-hidden="true">×</span>
           </button>
         </div>
 
         <div className="settings-sections">
           <section className="settings-section">
-            <p className="panel-title">Options</p>
+            <p className="panel-title">{t('Options')}</p>
             <div className="control-list">
               <div className="control-row">
-                <span>Notes</span>
+                <span>{t('Notes')}</span>
                 <button className="toggle-button" type="button" aria-pressed={notesEnabled} onClick={onToggleNotesEnabled}>
                   {notesEnabled ? 'ON' : 'OFF'}
                 </button>
               </div>
               <div className="control-row">
-                <span>Surbrillance</span>
+                <span>{t('Surbrillance')}</span>
                 <button className="toggle-button" type="button" aria-pressed={highlightSame} onClick={onToggleHighlightSame}>
                   {highlightSame ? 'ON' : 'OFF'}
                 </button>
               </div>
               <div className="control-row">
-                <span>Vérification des erreurs</span>
+                <span>{t('Vérification des erreurs')}</span>
                 <button className="toggle-button" type="button" aria-pressed={checkErrors} onClick={onToggleCheckErrors}>
                   {checkErrors ? 'ON' : 'OFF'}
                 </button>
@@ -80,7 +84,7 @@ export default function SettingsDialog({
           </section>
 
           <section className="settings-section">
-            <p className="panel-title">Difficulté</p>
+            <p className="panel-title">{t('Difficulté')}</p>
             <div className="difficulty-row">
               {DIFFICULTY_ORDER.map((option) => (
                 <button
@@ -90,23 +94,23 @@ export default function SettingsDialog({
                   aria-pressed={option === difficulty}
                   onClick={() => onSelectDifficulty(option)}
                 >
-                  {DIFFICULTY_PROFILES[option].label}
+                  {t(DIFFICULTY_PROFILES[option].label)}
                 </button>
               ))}
             </div>
           </section>
 
-          <section className="settings-section auth-panel" aria-label="Se connecter pour synchroniser mes statistiques">
+          <section className="settings-section auth-panel" aria-label={t('Se connecter pour synchroniser mes statistiques')}>
             {session?.user ? (
               <div className="auth-user">
                 <span className="auth-email">{session.user.email}</span>
                 <button className="action-button" type="button" onClick={onSignOut}>
-                  Se déconnecter
+                  {t('Se déconnecter')}
                 </button>
               </div>
             ) : (
               <form className="auth-form" onSubmit={onMagicLinkSubmit}>
-                <label className="field-label" htmlFor="sudoku-email">Adresse e-mail</label>
+                <label className="field-label" htmlFor="sudoku-email">{t('Adresse e-mail')}</label>
                 <input
                   className="auth-input"
                   id="sudoku-email"
@@ -117,10 +121,10 @@ export default function SettingsDialog({
                   required
                 />
                 <button className="action-button action-button--primary" type="submit" disabled={authBusy}>
-                  Se connecter pour synchroniser mes statistiques
+                  {t('Se connecter pour synchroniser mes statistiques')}
                 </button>
                 {magicLinkSent && (
-                  <p className="auth-status" role="status">Lien envoyé. Consultez votre boîte mail.</p>
+                  <p className="auth-status" role="status">{t('Lien envoyé. Consultez votre boîte mail.')}</p>
                 )}
               </form>
             )}

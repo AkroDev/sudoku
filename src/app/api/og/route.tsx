@@ -8,24 +8,27 @@ function readSeconds(value: string | null) {
   return Number.isSafeInteger(seconds) ? seconds : null;
 }
 
-function getOptionTags(searchParams: URLSearchParams) {
+function getOptionTags(searchParams: URLSearchParams, locale: 'fr' | 'en') {
   const tags = [];
   if (searchParams.get('notes') === '1') tags.push('Notes');
-  if (searchParams.get('highlight') !== '0') tags.push('Surbrillance');
-  if (searchParams.get('check') !== '0') tags.push('Vérification');
+  if (searchParams.get('highlight') !== '0') tags.push(locale === 'en' ? 'Highlighting' : 'Surbrillance');
+  if (searchParams.get('check') !== '0') tags.push(locale === 'en' ? 'Error checking' : 'Vérification');
   return tags;
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const isHomeCard = searchParams.get('mode') === 'home';
+  const locale = searchParams.get('lang') === 'en' ? 'en' : 'fr';
   const backgroundUrl = new URL('/share-card-background.png', request.url).toString();
   const parsed = parsePuzzleId(searchParams.get('grid') ?? '');
   const difficulty = parsed?.difficulty ?? 'medium';
   const puzzleId = parsed ? formatPuzzleId(parsed.difficulty, parsed.seed) : 'M-0001';
   const elapsedSeconds = readSeconds(searchParams.get('time'));
-  const difficultyLabel = DIFFICULTY_PROFILES[difficulty].label;
-  const optionTags = isHomeCard ? [] : getOptionTags(searchParams);
+  const difficultyLabel = locale === 'en'
+    ? { easy: 'Easy', medium: 'Medium', hard: 'Hard', expert: 'Expert' }[difficulty]
+    : DIFFICULTY_PROFILES[difficulty].label;
+  const optionTags = isHomeCard ? [] : getOptionTags(searchParams, locale);
   const puzzle = parsed
     ? process.env.NEXT_PUBLIC_SUDOKU_START_SEED === '1'
       ? createCatalogPuzzle(difficulty, parsed.seed)
@@ -155,7 +158,7 @@ export async function GET(request: Request) {
                 }}
               >
                 <span style={{ color: '#fb923c', fontSize: 18, fontWeight: 700, letterSpacing: 2 }}>
-                  GRILLE #{puzzleId}
+                  {locale === 'en' ? `PUZZLE #${puzzleId}` : `GRILLE #${puzzleId}`}
                 </span>
                 <span style={{ color: '#c4b5fd', fontSize: 15, letterSpacing: 2 }}>
                   {difficultyLabel.toUpperCase()}
@@ -171,13 +174,15 @@ export async function GET(request: Request) {
                 }}
               >
                 {isHomeCard
-                  ? 'À toi de jouer !'
+                  ? locale === 'en' ? 'Your turn!' : 'À toi de jouer !'
                   : elapsedSeconds === null
-                  ? 'Une nouvelle grille t’attend.'
-                  : `Je viens de terminer cette grille en ${formatTime(elapsedSeconds)}.`}
+                  ? locale === 'en' ? 'A new puzzle is waiting for you.' : 'Une nouvelle grille t’attend.'
+                  : locale === 'en'
+                    ? `I just completed this puzzle in ${formatTime(elapsedSeconds)}.`
+                    : `Je viens de terminer cette grille en ${formatTime(elapsedSeconds)}.`}
               </span>
               {!isHomeCard && <span style={{ marginTop: 20, color: '#c4b5fd', fontSize: 31, fontWeight: 700 }}>
-                À toi de jouer !
+                {locale === 'en' ? 'Your turn!' : 'À toi de jouer !'}
               </span>}
               {optionTags.length > 0 && (
                 <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>

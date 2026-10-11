@@ -1,3 +1,7 @@
+'use client';
+
+import { useLocaleText } from '@/i18n';
+
 type GameDialogsProps = {
   confirmNewGameOpen: boolean;
   onCancelNewGame: () => void;
@@ -29,20 +33,21 @@ export default function GameDialogs({
   onCloseReplayNotice,
   onReplayPuzzle,
 }: GameDialogsProps) {
+  const { t } = useLocaleText();
   return (
     <>
       {confirmNewGameOpen && (
         <div className="modal-backdrop">
           <section className="panel dialog-panel confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="new-game-title">
-            <p className="eyebrow">Nouvelle grille</p>
-            <h2 id="new-game-title">On change de grille ?</h2>
-            <p className="dialog-copy">La progression actuelle ne sera pas conservée.</p>
+            <p className="eyebrow">{t('Nouvelle grille')}</p>
+            <h2 id="new-game-title">{t('On change de grille ?')}</h2>
+            <p className="dialog-copy">{t('La progression actuelle ne sera pas conservée.')}</p>
             <div className="dialog-actions">
               <button className="action-button" type="button" onClick={onCancelNewGame}>
-                Rester sur cette grille
+                {t('Rester sur cette grille')}
               </button>
               <button className="action-button action-button--primary" type="button" onClick={onConfirmNewGame}>
-                Oui, nouvelle grille
+                {t('Oui, nouvelle grille')}
               </button>
             </div>
           </section>
@@ -52,14 +57,14 @@ export default function GameDialogs({
       {confirmRestartOpen && (
         <div className="modal-backdrop">
           <section className="panel dialog-panel confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="restart-title">
-            <h2 id="restart-title">On remet les compteurs à zéro ?</h2>
-            <p className="dialog-copy">La grille actuelle sera conservée, mais votre progression sera effacée.</p>
+            <h2 id="restart-title">{t('On remet les compteurs à zéro ?')}</h2>
+            <p className="dialog-copy">{t('La grille actuelle sera conservée, mais votre progression sera effacée.')}</p>
             <div className="dialog-actions">
               <button className="action-button" type="button" onClick={onCancelRestart}>
-                Continuer
+                {t('Continuer')}
               </button>
               <button className="action-button action-button--primary" type="button" onClick={onConfirmRestart}>
-                Recommencer
+                {t('Recommencer')}
               </button>
             </div>
           </section>
@@ -79,15 +84,15 @@ export default function GameDialogs({
               <span className="intro-orbit intro-orbit--one" />
               <span className="intro-orbit intro-orbit--two" />
             </div>
-            <p className="eyebrow">AkroLabs · Sudoku</p>
-            <h2 id="intro-title">Bienvenue dans le Sudoku AkroLabs</h2>
-            <p className="dialog-copy">Faites travailler vos neurones à votre rythme. Difficulté, aides et statistiques se cachent sous la roue dentée.</p>
+            <p className="eyebrow">AkroLabs · {t('Sudoku')}</p>
+            <h2 id="intro-title">{t('Bienvenue dans le Sudoku AkroLabs')}</h2>
+            <p className="dialog-copy">{t('Faites travailler vos neurones à votre rythme. Difficulté, aides et statistiques se cachent sous la roue dentée.')}</p>
             <label className="checkbox-row">
               <input type="checkbox" checked={introDontShowAgain} onChange={(event) => onIntroDontShowAgainChange(event.target.checked)} />
-              <span>J’ai compris, on peut cacher cette fenêtre.</span>
+              <span>{t('J’ai compris, on peut cacher cette fenêtre.')}</span>
             </label>
             <button className="action-button action-button--primary intro-cta" type="button" onClick={onCloseOptionsIntro}>
-              C’est parti
+              {t('C’est parti')}
             </button>
           </section>
         </div>
@@ -97,14 +102,14 @@ export default function GameDialogs({
         <div className="modal-backdrop">
           <section className="panel dialog-panel replay-dialog" role="dialog" aria-modal="true" aria-labelledby="replay-title">
             <p className="eyebrow">Hall of Fame</p>
-            <h2 id="replay-title">Cette grille a déjà été jouée</h2>
-            <p className="dialog-copy">Vous pouvez la recommencer et modifier les options si vous le souhaitez. Votre nouveau score ne sera pas ajouté au Hall of Fame.</p>
+            <h2 id="replay-title">{t('Cette grille a déjà été jouée')}</h2>
+            <p className="dialog-copy">{t('Vous pouvez la recommencer et modifier les options si vous le souhaitez. Votre nouveau score ne sera pas ajouté au Hall of Fame.')}</p>
             <div className="dialog-actions">
               <button className="action-button" type="button" onClick={onCloseReplayNotice}>
-                Rester sur le résultat
+                {t('Rester sur le résultat')}
               </button>
               <button className="action-button action-button--primary" type="button" onClick={onReplayPuzzle}>
-                Rejouer la grille
+                {t('Rejouer la grille')}
               </button>
             </div>
           </section>

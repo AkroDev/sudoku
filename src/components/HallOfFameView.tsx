@@ -11,6 +11,7 @@ import {
 import { DIFFICULTY_ORDER, DIFFICULTY_PROFILES, parsePuzzleId } from '@/lib/sudoku';
 import RankingRow from '@/components/RankingRow';
 import GridLookup from '@/components/GridLookup';
+import { localizedPath, useLocaleText } from '@/i18n';
 
 type HallOfFameViewProps = {
   grid: string | null;
@@ -27,6 +28,7 @@ function createInitialFilters(grid: string | null, returnGrid: string | null): H
 }
 
 export default function HallOfFameView({ grid, returnGrid }: HallOfFameViewProps) {
+  const { locale, t } = useLocaleText();
   const [entries, setEntries] = useState<HallOfFameEntry[]>([]);
   const [filters, setFilters] = useState<HallOfFameFilters>(() => createInitialFilters(grid, returnGrid));
 
@@ -47,66 +49,66 @@ export default function HallOfFameView({ grid, returnGrid }: HallOfFameViewProps
   const rankingSlots = Array.from({ length: 10 }, (_, index) => entries[index] ?? null);
 
   return (
-    <section className="panel hall-of-fame-card" aria-label="Hall of Fame">
+    <section className="panel hall-of-fame-card" aria-label={t('Hall of Fame')}>
       <GridLookup initialGrid={grid} />
       <p className="eyebrow">Hall of Fame</p>
       <h1>
         {grid ? (
-          <a className="grid-return-link" href={`/sudoku/${grid}`}>
+          <a className="grid-return-link" href={localizedPath(`/sudoku/${grid}`, locale)}>
             #{grid}
           </a>
-        ) : 'Toutes les grilles'}
+        ) : t('Toutes les grilles')}
       </h1>
-      <div className={`hof-filters${grid ? '' : ' hof-filters--global'}`} aria-label="Filtrer le classement">
+      <div className={`hof-filters${grid ? '' : ' hof-filters--global'}`} aria-label={t('Filtrer le classement')}>
         {!grid && (
           <label className="hof-filter">
-            <span>Difficulté</span>
+            <span>{t('Difficulté')}</span>
             <select
               value={filters.difficulty}
               onChange={(event) => setFilters((current) => ({ ...current, difficulty: event.target.value as HallOfFameFilters['difficulty'] }))}
             >
-              <option value="all">Toutes</option>
+              <option value="all">{t('Toutes')}</option>
               {DIFFICULTY_ORDER.map((difficulty) => (
-                <option value={difficulty} key={difficulty}>{DIFFICULTY_PROFILES[difficulty].label}</option>
+                <option value={difficulty} key={difficulty}>{t(DIFFICULTY_PROFILES[difficulty].label)}</option>
               ))}
             </select>
           </label>
         )}
         <label className="hof-filter">
-          <span>Notes</span>
+          <span>{t('Notes')}</span>
           <select
             value={filters.notes}
             onChange={(event) => setFilters((current) => ({ ...current, notes: event.target.value as HallOfFameFilters['notes'] }))}
           >
-            <option value="all">Toutes</option>
-            <option value="with">Avec</option>
-            <option value="without">Sans</option>
+            <option value="all">{t('Toutes')}</option>
+            <option value="with">{t('Avec')}</option>
+            <option value="without">{t('Sans')}</option>
           </select>
         </label>
         <label className="hof-filter">
-          <span>Surbrillance</span>
+          <span>{t('Surbrillance')}</span>
           <select
             value={filters.highlightSame}
             onChange={(event) => setFilters((current) => ({ ...current, highlightSame: event.target.value as HallOfFameFilters['highlightSame'] }))}
           >
-            <option value="all">Toutes</option>
-            <option value="with">Activée</option>
-            <option value="without">Désactivée</option>
+            <option value="all">{t('Toutes')}</option>
+            <option value="with">{t('Activée')}</option>
+            <option value="without">{t('Désactivée')}</option>
           </select>
         </label>
         <label className="hof-filter">
-          <span>Vérification</span>
+          <span>{t('Vérification')}</span>
           <select
             value={filters.checkErrors}
             onChange={(event) => setFilters((current) => ({ ...current, checkErrors: event.target.value as HallOfFameFilters['checkErrors'] }))}
           >
-            <option value="all">Toutes</option>
-            <option value="with">Activée</option>
-            <option value="without">Désactivée</option>
+            <option value="all">{t('Toutes')}</option>
+            <option value="with">{t('Activée')}</option>
+            <option value="without">{t('Désactivée')}</option>
           </select>
         </label>
       </div>
-      <ol className="ranking-list ranking-list--page" aria-label="Classement">
+      <ol className="ranking-list ranking-list--page" aria-label={t('Classement')}>
         {rankingSlots.map((entry, index) => (
           entry ? (
             <RankingRow
@@ -119,7 +121,7 @@ export default function HallOfFameView({ grid, returnGrid }: HallOfFameViewProps
             <li className="ranking-row ranking-row--empty" key={`empty-${index}`}>
               <span className="ranking-rank">#{index + 1}</span>
               {!grid && <span className="ranking-grid-id">—</span>}
-              <span className="ranking-empty-message">{EMPTY_RANKING_MESSAGES[index] ?? '—'}</span>
+              <span className="ranking-empty-message">{t(EMPTY_RANKING_MESSAGES[index] ?? '—')}</span>
             </li>
           )
         ))}

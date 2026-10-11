@@ -2,6 +2,7 @@ import { EMPTY_RANKING_MESSAGES, type HallOfFameEntry } from '@/lib/hall-of-fame
 import type { DifficultyStatistics, PersonalStatistics } from '@/lib/statistics';
 import { formatTime } from '@/lib/time';
 import RankingRow from '@/components/RankingRow';
+import { localizedPath, useLocaleText } from '@/i18n';
 
 type GameSidebarProps = {
   puzzleId: string;
@@ -16,13 +17,14 @@ function formatOptionalTime(value: number | null) {
 }
 
 export default function GameSidebar({ puzzleId, hallOfFame, statistics, currentStatistics, averageTime }: GameSidebarProps) {
+  const { locale, t } = useLocaleText();
   const rankingSlots = Array.from({ length: 10 }, (_, index) => hallOfFame[index] ?? null);
 
   return (
     <aside className="side-column">
       <section className="panel side-panel hof-panel">
         <div className="hof-heading">
-          <a className="hof-link" href={`/sudoku/hall-of-fame?grid=${puzzleId}`} aria-label="Hall of Fame">
+          <a className="hof-link" href={`${localizedPath('/sudoku/hall-of-fame', locale)}?grid=${puzzleId}`} aria-label={t('Hall of Fame')}>
             <div className="hof-copy">
               <p className="panel-title">Hall of Fame</p>
               <div className="hof-number-line">
@@ -47,15 +49,15 @@ export default function GameSidebar({ puzzleId, hallOfFame, statistics, currentS
       </section>
 
       <section className="panel side-panel personal-stats-panel" aria-label="Statistiques personnelles">
-        <p className="panel-title">Statistiques personnelles</p>
+          <p className="panel-title">{t('Statistiques personnelles')}</p>
         <div className="stats-grid">
-          <div className="stat-item"><span>Parties terminées</span><strong>{statistics.totalCompleted}</strong></div>
-          <div className="stat-item"><span>Meilleur temps</span><strong>{formatOptionalTime(currentStatistics.bestTime)}</strong></div>
-          <div className="stat-item"><span>Temps moyen</span><strong>{formatOptionalTime(averageTime)}</strong></div>
-          <div className="stat-item"><span>Erreurs</span><strong>{currentStatistics.errors}</strong></div>
+          <div className="stat-item"><span>{t('Parties terminées')}</span><strong>{statistics.totalCompleted}</strong></div>
+          <div className="stat-item"><span>{t('Meilleur temps')}</span><strong>{formatOptionalTime(currentStatistics.bestTime)}</strong></div>
+          <div className="stat-item"><span>{t('Temps moyen')}</span><strong>{formatOptionalTime(averageTime)}</strong></div>
+          <div className="stat-item"><span>{t('Erreurs')}</span><strong>{currentStatistics.errors}</strong></div>
         </div>
-        <a className="stats-detail-link" href="/sudoku/statistiques">
-          Voir mes statistiques détaillées
+        <a className="stats-detail-link" href={localizedPath('/sudoku/statistiques', locale)}>
+          {t('Voir mes statistiques détaillées')}
         </a>
       </section>
     </aside>
